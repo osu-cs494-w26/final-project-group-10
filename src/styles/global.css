@@ -1,0 +1,64 @@
+/* Global CSS File */
+
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Oswald:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black:      #0a0a0a;
+  --grey-900:   #111111;
+  --grey-800:   #1c1c1c;
+  --grey-700:   #2a2a2a;
+  --grey-600:   #3a3a3a;
+  --grey-500:   #555555;
+  --grey-400:   #777777;
+  --grey-300:   #aaaaaa;
+  --grey-200:   #cccccc;
+  --grey-100:   #e8e8e8;
+  --white:      #f0f0f0;
+  --pure-white: #ffffff;
+  --hp-green:   #5a9c6a;
+  --hp-yellow:  #b8a030;
+  --hp-red:     #c03030;
+  --border:     #2a2a2a;
+  --border-mid: #3a3a3a;
+  --border-lt:  #555555;
+  --font-display: 'Oswald', sans-serif;
+  --font-mono:    'Share Tech Mono', monospace;
+  --font-ui:      'Rajdhani', sans-serif;
+  --nav-h: 52px;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  letter-spacing: 0.02em;
+}
+
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--grey-800); }
+::-webkit-scrollbar-thumb { background: var(--grey-500); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--grey-300); }
+
+@keyframes fadeIn      { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeInFast  { from { opacity:0; } to { opacity:1; } }
+@keyframes popIn       { from { transform:scale(0.92); opacity:0; } to { transform:scale(1); opacity:1; } }
+@keyframes slideInLeft { from { transform:translateX(-20px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes slideInRight{ from { transform:translateX(20px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes shake       { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+@keyframes flash       { 0%,100%{opacity:1} 50%{opacity:0.1} }
+@keyframes pulse       { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes hpAnim      { from{width:var(--hp-from)} to{width:var(--hp-to)} }
+@keyframes slideUp     { from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+.animate-fadeIn     { animation: fadeIn     0.3s ease both; }
+.animate-fadeInFast { animation: fadeInFast 0.15s ease both; }
+.animate-popIn      { animation: popIn      0.25s cubic-bezier(0.34,1.2,0.64,1) both; }
+.animate-slideLeft  { animation: slideInLeft  0.3s ease both; }
+.animate-slideRight { animation: slideInRight 0.3s ease both; }
+.animate-shake      { animation: shake 0.4s ease; }
+.animate-flash      { animation: flash 0.3s ease 3; }
+.animate-pulse      { animation: pulse 1.2s ease-in-out infinite; }

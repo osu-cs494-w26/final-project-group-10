@@ -1,0 +1,72 @@
+// Holds battle constents
+
+// Color Codes for diffrent types
+export const TYPE_COLORS = {
+  fire:     '#F08030',
+  water:    '#6890F0',
+  grass:    '#78C850',
+  electric: '#F8D030',
+  psychic:  '#F85888',
+  ice:      '#98D8D8',
+  dragon:   '#7038F8',
+  dark:     '#705848',
+  fairy:    '#EE99AC',
+  normal:   '#A8A878',
+  fighting: '#C03028',
+  flying:   '#A890F0',
+  poison:   '#A040A0',
+  ground:   '#E0C068',
+  rock:     '#B8A038',
+  bug:      '#A8B820',
+  ghost:    '#705898',
+  steel:    '#B8B8D0',
+};
+
+// List of Gen 1 Pokemon
+export const GEN1_POKEMON = [
+  'bulbasaur','ivysaur','venusaur','charmander','charmeleon','charizard',
+  'squirtle','wartortle','blastoise','caterpie','metapod','butterfree',
+  'weedle','kakuna','beedrill','pidgey','pidgeotto','pidgeot','rattata',
+  'raticate','spearow','fearow','ekans','arbok','pikachu','raichu',
+  'sandshrew','sandslash','nidoran-f','nidorina','nidoqueen','nidoran-m',
+  'nidorino','nidoking','clefairy','clefable','vulpix','ninetales',
+  'jigglypuff','wigglytuff','zubat','golbat','oddish','gloom','vileplume',
+  'paras','parasect','venonat','venomoth','diglett','dugtrio','meowth',
+  'persian','psyduck','golduck','mankey','primeape','growlithe','arcanine',
+  'poliwag','poliwhirl','poliwrath','abra','kadabra','alakazam','machop',
+  'machoke','machamp','bellsprout','weepinbell','victreebel','tentacool',
+  'tentacruel','geodude','graveler','golem','ponyta','rapidash','slowpoke',
+  'slowbro','magnemite','magneton','farfetchd','doduo','dodrio','seel',
+  'dewgong','grimer','muk','shellder','cloyster','gastly','haunter','gengar',
+  'onix','drowzee','hypno','krabby','kingler','voltorb','electrode',
+  'exeggcute','exeggutor','cubone','marowak','hitmonlee','hitmonchan',
+  'lickitung','koffing','weezing','rhyhorn','rhydon','chansey','tangela',
+  'kangaskhan','horsea','seadra','goldeen','seaking','staryu','starmie',
+  'mr-mime','scyther','jynx','electabuzz','magmar','pinsir','tauros',
+  'magikarp','gyarados','lapras','ditto','eevee','vaporeon','jolteon',
+  'flareon','porygon','omanyte','omastar','kabuto','kabutops','aerodactyl',
+  'snorlax','articuno','zapdos','moltres','dratini','dragonair','dragonite',
+  'mewtwo','mew',
+];
+
+// Item List
+export const ITEMS = [
+  { name: 'Leftovers',    desc: 'Restores 1/16 HP each turn',                   },
+  { name: 'Life Orb',     desc: 'Boosts moves 30%, but costs HP',               },
+  { name: 'Choice Scarf', desc: 'Boosts Speed 1.5×, locks into one move',       },
+  { name: 'Choice Band',  desc: 'Boosts Attack 1.5×, locks into one move',      },
+  { name: 'Choice Specs', desc: 'Boosts Sp.Atk 1.5×, locks into one move',      },
+  { name: 'Rocky Helmet', desc: 'Damages attacker on contact',                  },
+  { name: 'Eviolite',     desc: 'Boosts defenses of unevolved Pokémon',         },
+  { name: 'Assault Vest', desc: 'Boosts Sp.Def 1.5×, no status moves',          },
+  { name: 'Focus Sash',   desc: 'Survive one KO hit with 1 HP',                 },
+  { name: 'Black Sludge', desc: 'Heals Poison types, damages others',           },
+  { name: 'Lum Berry',    desc: 'Cures any status condition once',              },
+  { name: 'Sitrus Berry', desc: 'Restores 1/4 HP when below 50%',               },
+  { name: 'Shell Bell',   desc: 'Restores 1/8 of damage dealt',                 },
+  { name: 'Expert Belt',  desc: 'Boosts super-effective moves by 20%',          },
+  { name: 'Wise Glasses', desc: 'Boosts Sp.Atk moves by 10%',                   },
+  { name: 'Muscle Band',  desc: 'Boosts physical moves by 10%',                 },
+  { name: 'Air Balloon',  desc: 'Holder is immune to Ground moves until hit',   },
+  { name: 'Safety Goggles',desc:'Protects from weather and powder moves',       },
+];
