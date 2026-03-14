@@ -1,4 +1,7 @@
-// Global cache + React hook for fetching Pokemon and move data from PokeAPI.
+/*
+ * usePokemonData.js Module-level cache and React hook for Pokémon and move data.
+ * fetchPokeData / fetchMoveData hit PokeAPI once then serve from cache forever.
+ */
 
 import { useState, useCallback, useRef } from 'react';
 
@@ -8,8 +11,28 @@ const moveCache = {};  // moveName -> { type, power, pp, category, effect, flavo
 const abilityCache = {}; // abilityUrl -> { desc }
 
 // Fetch full pokemon data from PokeAPI and cache it globally for the session
+// Fetches full Pokémon data from PokeAPI and caches it for the session.
 export async function fetchPokeData(name) {
   if (pokeCache[name]) return pokeCache[name];
+
+  // Testmon is a local dummy never hits the API
+  if (name.startsWith('testmon')) {
+    const entry = {
+      id: 0, name,
+      sprite:     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png',
+      spriteBack: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/132.png',
+      types: ['normal'], abilities: [],
+      stats: [
+        { name:'hp', value:255 }, { name:'attack', value:255 },
+        { name:'defense', value:255 }, { name:'special-attack', value:255 },
+        { name:'special-defense', value:255 }, { name:'speed', value:255 },
+      ],
+      moves: [],
+    };
+    pokeCache[name] = entry;
+    return entry;
+  }
+
   const res  = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
   const data = await res.json();
 
@@ -29,10 +52,8 @@ export async function fetchPokeData(name) {
   const entry = {
     id:           data.id,
     name:         data.name,
-    sprite:       data.sprites.front_default,  // I am using pixel sprite for consistency but we can change this
-    spritePixel:  data.sprites.front_default,
-    spriteArt:    data.sprites.other?.['official-artwork']?.front_default || data.sprites.front_default,
-    spriteBack:   data.sprites.back_default,
+    sprite:     data.sprites.front_default,
+    spriteBack: data.sprites.back_default,
     types:        data.types.map(t => t.type.name),
     stats:        data.stats.map(s => ({ name: s.stat.name, value: s.base_stat })),
     moves:        data.moves.map(m => m.move.name.replace(/-/g, ' ')),
@@ -42,11 +63,29 @@ export async function fetchPokeData(name) {
   return entry;
 }
 
+// Custom effect descriptions that override PokeAPI text
+const MOVE_EFFECT_OVERRIDES = {
+  'moonlight':   'Heal the user for 25% of max health or 50% if a weather effect is in play.',
+  'autotomize':  'Raises the user\'s speed by two stages.',
+};
+
+// Move name overrides: PokeAPI uses different slugs for some moves
+const MOVE_NAME_OVERRIDES = {
+  "land's wrath":  'lands-wrath',
+  "forest's curse":'forests-curse',
+  'hi jump kick':  'high-jump-kick',
+  'softboiled':    'soft-boiled',
+  'thundershock':  'thunder-shock',
+  'vicegrip':      'vise-grip',
+};
+
 // Fetch a single move's type/power/pp/effect and cache it globally
+// Fetches a move's type, power, PP, and effect text, then caches it.
 export async function fetchMoveData(moveName) {
   if (moveCache[moveName]) return moveCache[moveName];
   try {
-    const res  = await fetch(`https://pokeapi.co/api/v2/move/${moveName.replace(/ /g, '-')}`);
+    const slug = MOVE_NAME_OVERRIDES[moveName] || moveName.replace(/ /g, '-');
+    const res  = await fetch(`https://pokeapi.co/api/v2/move/${slug}`);
     const data = await res.json();
     const engEffect = data.effect_entries?.find(e => e.language.name === 'en');
     const engFlavor = data.flavor_text_entries?.find(e => e.language.name === 'en');
@@ -58,7 +97,7 @@ export async function fetchMoveData(moveName) {
       accuracy: data.accuracy || 100,
       priority: data.priority || 0,
       category: data.damage_class?.name || 'physical',
-      effect:   (engEffect?.short_effect || '').replace(/\$effect_chance/g, data.effect_chance || ''),
+      effect:   MOVE_EFFECT_OVERRIDES[moveName] || (engEffect?.short_effect || '').replace(/\$effect_chance/g, data.effect_chance || ''),
       flavor:   (engFlavor?.flavor_text || '').replace(/[\n\f]/g, ' '),
     };
     moveCache[moveName] = entry;
@@ -71,13 +110,15 @@ export async function fetchMoveData(moveName) {
 }
 
 // React hook that exposes sprite/data state and fetch helpers to components
+// React hook exposing sprite state and fetch helpers to components.
 export function usePokemonData() {
   const [sprites,  setSprites]  = useState({});
   const [pokeData, setPokeData] = useState({});
   const loading = useRef(new Set());
 
   const fetchBasic = useCallback(async (name) => {
-    if (sprites[name] || loading.current.has(name)) return;
+    if (sprites[name]) return; // already in React state skip
+    if (loading.current.has(name)) return; // fetch already in-flight
     loading.current.add(name);
     try {
       const data = await fetchPokeData(name);
@@ -98,5 +139,19 @@ export function usePokemonData() {
     return data;
   }, []);
 
-  return { sprites, pokeData, fetchBasic, prefetchFull };
+  // Push all globally-cached pokemon into React state in one batch
+  const batchRegisterAll = useCallback((names) => {
+    setSprites(prev => {
+      const newSprites = { ...prev };
+      names.forEach(n => { if (pokeCache[n]) newSprites[n] = pokeCache[n].sprite; });
+      return newSprites;
+    });
+    setPokeData(prev => {
+      const newData = { ...prev };
+      names.forEach(n => { if (pokeCache[n]) newData[n] = pokeCache[n]; });
+      return newData;
+    });
+  }, []);
+
+  return { sprites, pokeData, fetchBasic, prefetchFull, batchRegisterAll };
 }

@@ -1,8 +1,12 @@
-// Popup grid for picking a held item.
+/*
+ * ItemPopup.jsx Modal for browsing and selecting a held item
+ * to assign to a Pokémon in the team builder.
+ */
 
 import React, { useState } from 'react';
 import { ITEMS } from '../utils/constants.js';
 
+// Renders the item list with descriptions and a select action.
 export default function ItemPopup({ onClose, onSelect, selectedItem }) {
   const [search, setSearch] = useState('');
   const filtered = ITEMS.filter(i => i.name.toLowerCase().includes(search.toLowerCase()));

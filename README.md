@@ -1,42 +1,59 @@
-## PokePortal
+# PokePortal
 
-Initial stuff for the project
+This is a fullstack Pokémon web app built with React and Vite. You can browse the complete Pokédex, battle AI trainers, and test your Pokémon knowledge with daily challenges.
 
-## IMPORTANT!
+## Features
 
-Make sure you cache data locally for users. 
+**Pokédex** 
 
-This is PokiAPIs only big rule to prevent spam. So don't forget to do this or we might get banned.
+**Battle System** Turnbased battles using the official Gen 5 damage formula. Supports three modes:
+
+Quick Battle gives you and your AI opponent a random Pokemon team with random moves.
+
+Build Team lets you construct a custom team with full EV allocation, move customisation, items, and ability selection, then save it to one of ten slots.
+
+Battle Trainer lets you challenge 12 trainers from across the games, each with curated teams and EV spreads, using one of your saved teams.
+
+**Who's That Pokémon?** 
+
+**Personality Quiz** 
+
+## Tech Stack
+
+**Frontend** React 18 with Vite
+
+**Auth and Database** Supabase. Saved teams persist per authenticated user.
+
+**Data** PokéAPI provides all Pokémon, move, and ability data.
 
 ## Running the Project
 
-**Requirements:** Node.js 18+
+Requirements: Node.js 18+
 
 ```bash
-# Install dependencies
 npm install
-
-# Start dev server
 npm run dev
-
 ```
 
-Runs entirely in the browser. No API keys needed.
+Create a `.env` file in the project root with the Supabase credentials:
 
----
+```
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## Project Structure
+
+```
+src/
+  components/     Shared UI components
+  hooks/          useBattle, usePokemonData, useAuth
+  moves/          Move effect registry split by type (18 files)
+  pages/          Top level page components
+  styles/         Global CSS variables and base styles
+  utils/          Battle engine, constants, move effects registry, Supabase client
+```
 
 ## Caching
 
-All PokeAPI responses are stored in module level objects that persist for the session:
-
-- Opening the customize popup for an added Pokemon is **instant**
-- Move types in the all moves list load per row and cache immediately
-- Navigating between pages doesn't re fetch anything already loaded
-
----
-
-## Limitations
-
-- Battle logic not yet implemented.
-- A of right now only Gen 1 Pokemon are avaliable in the battle simulator, more will be added if I have time.
-- I have not done any reactive styling yet
+All PokéAPI responses are cached at the module level and persist for the session. Once a Pokémon or move is fetched it is never rerequested. If you hav any aditions to the project please make sure you cach your changes locally.

@@ -1,8 +1,12 @@
-// Pokeball status icons above each team's HP bar in the battle screen.
+/*
+ * TeamStatusBar.jsx Row of six Pokéball icons above each team's HP bar,
+ * coloured by health state and highlighted for the active Pokémon.
+ */
 
 import React from 'react';
 
 // Draws a pokeball SVG icon colored by the pokemon's HP state
+// Single Pokéball SVG icon coloured by the Pokémon's HP state.
 function Pokeball({ poke, isActive }) {
   const fainted = poke?.fainted;
   const pct     = poke ? poke.hp / poke.maxHp : 0;
@@ -16,7 +20,7 @@ function Pokeball({ poke, isActive }) {
 
   return (
     <svg width={size} height={size} viewBox="0 0 20 20" style={{ flexShrink:0, filter: isActive ? 'drop-shadow(0 0 3px rgba(255,255,255,0.4))' : 'none', transition:'all 0.3s' }}>
-      {/* Top half — always red like a real pokeball */}
+      {/* Top half always red like a real pokeball */}
       <path d="M2,10 A8,8 0 0,1 18,10 Z" fill={fainted ? '#442222' : '#c03020'} />
       {/* Bottom half */}
       <path d="M2,10 A8,8 0 0,0 18,10 Z" fill={fainted ? '#333' : '#1a1a1a'} />
@@ -31,6 +35,7 @@ function Pokeball({ poke, isActive }) {
 }
 
 // Row of pokeball icons shown above each team's HP bar
+// Renders both teams' six-Pokéball status rows.
 export default function TeamStatusBar({ playerTeam, aiTeam, playerActive, aiActive }) {
   return (
     <div style={{
