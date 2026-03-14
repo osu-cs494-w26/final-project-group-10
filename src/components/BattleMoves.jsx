@@ -1,16 +1,13 @@
-// 2x2 move buttons for the active Pokemon, plus a switch Pokemon panel.
+/*
+ * BattleMoves.jsx Four move buttons shown during the player's turn.
+ * Displays type, PP, category badge, and type-effectiveness against the opponent.
+ */
+import React from 'react';
 
-import React, { useState } from 'react';
+import { getTypeEffectiveness } from '../utils/battleEngine.js';
+import MoveTooltip from './MoveTooltip.jsx';
+import { TYPE_BG } from '../utils/constants.js';
 
-// Type-tinted backgrounds for move buttons
-const TYPE_BG = {
-  fire:'#7a2a10',water:'#1a3a6a',grass:'#1a3a12',electric:'#4a3a00',
-  psychic:'#4a1028',ice:'#0a3a48',dragon:'#280e58',dark:'#1a1008',
-  fairy:'#4a1830',normal:'#303030',fighting:'#3a0e08',flying:'#283048',
-  poison:'#300a48',ground:'#3a2a08',rock:'#302808',bug:'#1e3008',
-  ghost:'#180a30',steel:'#283038',
-};
-// Bright accent borders for each type
 const TYPE_ACCENT = {
   fire:'#e06030',water:'#4090d0',grass:'#50a030',electric:'#c0a820',
   psychic:'#d03060',ice:'#30a0b0',dragon:'#6030c0',dark:'#706040',
@@ -19,56 +16,73 @@ const TYPE_ACCENT = {
   ghost:'#503088',steel:'#507088',
 };
 
-// 2x2 grid of the active pokemon's moves + a switch panel
-export default function BattleMoves({ pokemon, moveData, onMove, onSwitch, disabled, playerTeam, playerActive }) {
-  const [showSwitch, setShowSwitch] = useState(false);
+/** Returns the effectiveness multiplier of moveType vs defTypes */
+/** Returns { label, color } for every multiplier value including 1× */
+// Returns label and colour for a type-effectiveness multiplier.
+function effBadge(mult) {
+  if (mult === 0)    return { label: '0×',     color: '#666666' };
+  if (mult >= 4)     return { label: '4×',     color: '#ff4040' };
+  if (mult >= 2)     return { label: '2×',     color: '#e06060' };
+  if (mult <= 0.25)  return { label: '0.25×',  color: '#6080a0' };
+  if (mult <= 0.5)   return { label: '0.5×',   color: '#7090b0' };
+  return               { label: '1×',     color: '#888888' }; // neutral always shown
+}
+
+// Renders the four move buttons with effectiveness and category badges.
+export default function BattleMoves({ pokemon, moveData, onMove, disabled, lockedMove, defendingPoke }) {
   if (!pokemon) return null;
 
   const moves = pokemon.moves || [];
-  const switchCandidates = (playerTeam||[]).map((p,i)=>({...p,idx:i})).filter(p=>!p.fainted && p.idx!==playerActive);
+  // Always read types from the defending Pokémon falls back to [] if not yet loaded
+  const defTypes = defendingPoke?.types || [];
 
-  // Show the switch panel instead of moves when player clicks Switch
-  if (showSwitch) {
+    if (lockedMove) {
+    const md     = moveData?.[lockedMove];
+    const type   = md?.type || 'normal';
+    const accent = TYPE_ACCENT[type] || '#888';
+    const bg     = TYPE_BG[type] || '#2a2a2a';
     return (
-      <div style={{ background:'var(--grey-800)', border:'1px solid var(--border)', padding:'12px', display:'flex', flexDirection:'column', gap:'6px' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--border)', paddingBottom:'6px', marginBottom:'2px' }}>
-          <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.12em', color:'var(--grey-300)', textTransform:'uppercase' }}>Switch Pokemon</span>
-          <button onClick={()=>setShowSwitch(false)} style={{ background:'none', border:'none', color:'var(--grey-500)', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'12px' }}>Back</button>
+      <div style={{ background:'var(--grey-800)', border:'1px solid var(--border)', padding:'12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+        <div style={{ borderBottom:'1px solid var(--border)', paddingBottom:'6px' }}>
+          <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.12em', color:'#c0a820', textTransform:'uppercase' }}>
+            ⚡ Charging {pokemon.name}
+          </span>
         </div>
-        {switchCandidates.map(poke => {
-          const pct = poke.hp/poke.maxHp;
-          const hpColor = pct>0.5?'var(--hp-green)':pct>0.2?'var(--hp-yellow)':'var(--hp-red)';
-          return (
-            <button key={poke.idx} disabled={disabled} onClick={()=>{setShowSwitch(false);onSwitch(poke.idx,true);}}
-              style={{ background:'var(--grey-700)', border:'1px solid var(--border-mid)', padding:'9px 12px', cursor:disabled?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:'10px', color:'var(--white)', fontFamily:'inherit', transition:'border-color 0.1s', opacity:disabled?0.5:1 }}
-              onMouseEnter={e=>{if(!disabled)e.currentTarget.style.borderColor='var(--border-lt)'}}
-              onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border-mid)'}>
-              {poke.sprite&&<img src={poke.sprite} alt={poke.name} style={{width:'36px',height:'36px',imageRendering:'pixelated'}}/>}
-              <div style={{flex:1}}>
-                <div style={{fontFamily:'var(--font-display)',fontSize:'13px',letterSpacing:'0.05em',textTransform:'uppercase',marginBottom:'3px'}}>{poke.name}</div>
-                <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
-                  <div style={{flex:1,height:'4px',background:'var(--grey-600)'}}><div style={{width:`${pct*100}%`,height:'100%',background:hpColor}}/></div>
-                  <span style={{fontFamily:'var(--font-mono)',fontSize:'10px',color:'var(--grey-400)'}}>{poke.hp}/{poke.maxHp}</span>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-        {switchCandidates.length===0&&<div style={{fontFamily:'var(--font-mono)',fontSize:'12px',color:'var(--grey-600)',textAlign:'center',padding:'12px'}}>No other Pokemon available</div>}
+        <div style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:'var(--grey-400)', marginBottom:'4px' }}>
+          {pokemon.name} is locked into <span style={{ color: accent, textTransform: 'capitalize' }}>{lockedMove}</span>. It will execute next turn automatically.
+        </div>
+        <button
+          disabled={disabled}
+          onClick={() => onMove(lockedMove)}
+          style={{
+            background: bg,
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            borderRight: '1px solid rgba(255,255,255,0.1)',
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            borderLeft: `4px solid ${accent}`,
+            padding: '14px 16px', cursor: disabled ? 'not-allowed' : 'pointer',
+            textAlign: 'left', opacity: disabled ? 0.5 : 1,
+            transition: 'filter 0.1s',
+          }}
+          onMouseEnter={e => { if (!disabled) e.currentTarget.style.filter = 'brightness(1.3)'; }}
+          onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}>
+          <div style={{ fontFamily:'var(--font-display)', fontSize:'14px', letterSpacing:'0.1em', color:'var(--white)', textTransform:'uppercase', marginBottom:'4px' }}>
+            ▶ Continue: {lockedMove}
+          </div>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:'rgba(255,255,255,0.5)' }}>
+            {type.toUpperCase()} {md?.power ? `· ${md.power} PWR` : ''} {md?.category ? `· ${md.category.toUpperCase().slice(0,4)}` : ''}
+          </div>
+        </button>
       </div>
     );
   }
 
-  return (
+    return (
     <div style={{ background:'var(--grey-800)', border:'1px solid var(--border)', padding:'12px', display:'flex', flexDirection:'column', gap:'6px' }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--border)', paddingBottom:'6px', marginBottom:'2px' }}>
+      <div style={{ borderBottom:'1px solid var(--border)', paddingBottom:'6px', marginBottom:'2px' }}>
         <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.12em', color:'var(--grey-400)', textTransform:'uppercase' }}>
-          Moves — {pokemon.name}
+          Moves {pokemon.name}
         </span>
-        <button disabled={disabled||switchCandidates.length===0} onClick={()=>setShowSwitch(true)}
-          style={{ background:'transparent', border:'1px solid var(--border-mid)', color:disabled||switchCandidates.length===0?'var(--grey-700)':'var(--grey-300)', padding:'3px 12px', cursor:disabled||switchCandidates.length===0?'not-allowed':'pointer', fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase' }}>
-          Switch
-        </button>
       </div>
 
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'5px' }}>
@@ -78,31 +92,70 @@ export default function BattleMoves({ pokemon, moveData, onMove, onSwitch, disab
             <div key={i} style={{ background:'var(--grey-900)', border:'1px solid var(--border)', padding:'12px 14px', color:'var(--grey-700)', fontSize:'12px', fontFamily:'var(--font-mono)' }}>---</div>
           );
 
-          const md      = moveData?.[moveName];
-          const pp      = pokemon.pp?.[moveName] ?? 10;
-          const maxPP   = md?.pp || 10;
-          const noPP    = pp <= 0;
-          const type    = md?.type || 'normal';
-          const bg      = TYPE_BG[type]     || '#2a2a2a';
-          const accent  = TYPE_ACCENT[type] || '#666';
+          const md     = moveData?.[moveName];
+          const pp     = pokemon.pp?.[moveName] ?? md?.pp ?? 10;
+          const maxPP  = md?.pp || 10;
+          const noPP   = pp <= 0;
+          const type   = md?.type || 'normal';
+          const bg     = TYPE_BG[type]     || '#2a2a2a';
+          const accent = TYPE_ACCENT[type] || '#666';
+
+          // Type effectiveness badge shown for physical/special moves (catches variable-power moves like Return)
+          const isDamaging = md?.category === 'physical' || md?.category === 'special';
+          const mult = isDamaging ? getTypeEffectiveness(type, defTypes) : null;
+          const badge = mult !== null ? effBadge(mult) : null;
 
           return (
-            <button key={i} disabled={disabled||noPP} onClick={()=>onMove(moveName)}
-              style={{ background:noPP?'var(--grey-900)':bg, border:'1px solid rgba(255,255,255,0.07)', borderLeft:`4px solid ${noPP?'var(--grey-700)':accent}`, padding:'9px 11px', cursor:disabled||noPP?'not-allowed':'pointer', textAlign:'left', opacity:disabled?0.5:noPP?0.3:1, transition:'filter 0.1s', display:'flex', flexDirection:'column', gap:'4px' }}
-              onMouseEnter={e=>{if(!disabled&&!noPP)e.currentTarget.style.filter='brightness(1.2)'}}
-              onMouseLeave={e=>{e.currentTarget.style.filter='none'}}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                <span style={{ fontFamily:'var(--font-ui)', fontWeight:600, fontSize:'13px', textTransform:'capitalize', color:'var(--white)', lineHeight:1.2 }}>
-                  {moveName.replace(/-/g,' ')}
-                </span>
-              </div>
-              <div style={{ display:'flex', gap:'5px', fontSize:'10px', fontFamily:'var(--font-mono)', color:'rgba(255,255,255,0.5)', alignItems:'center' }}>
-                <span style={{ background:'rgba(0,0,0,0.35)', padding:'1px 5px', textTransform:'uppercase', fontSize:'9px', color:accent }}>{type}</span>
-                {md?.power>0&&<span>{md.power} PWR</span>}
-                {md?.category&&<span style={{opacity:0.7}}>{md.category.slice(0,4).toUpperCase()}</span>}
-                <span style={{ marginLeft:'auto', color:pp<=2?'#c05050':'rgba(255,255,255,0.45)' }}>{pp}/{maxPP} PP</span>
-              </div>
-            </button>
+            <MoveTooltip key={i} moveName={moveName} preloaded={md}>
+              <button
+                disabled={disabled || noPP}
+                onClick={() => onMove(moveName)}
+                style={{
+                  background: noPP ? 'var(--grey-900)' : bg,
+                  borderTop: '1px solid rgba(255,255,255,0.07)',
+                  borderRight: '1px solid rgba(255,255,255,0.07)',
+                  borderBottom: '1px solid rgba(255,255,255,0.07)',
+                  borderLeft: `4px solid ${noPP ? 'var(--grey-700)' : accent}`,
+                  padding: '9px 11px', cursor: disabled||noPP ? 'not-allowed' : 'pointer',
+                  textAlign: 'left', opacity: disabled ? 0.5 : noPP ? 0.3 : 1,
+                  transition: 'filter 0.1s', display: 'flex', flexDirection: 'column', gap: '4px',
+                  width: '100%',
+                }}
+                onMouseEnter={e => { if (!disabled && !noPP) e.currentTarget.style.filter = 'brightness(1.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'4px' }}>
+                  <span style={{ fontFamily:'var(--font-ui)', fontWeight:600, fontSize:'13px', textTransform:'capitalize', color:'var(--white)', lineHeight:1.2 }}>
+                    {moveName}
+                  </span>
+                  {badge && (
+                    <span style={{
+                      fontFamily:'var(--font-mono)', fontSize:'9px', fontWeight:700,
+                      color: badge.color,
+                      border: `1px solid ${badge.color}88`,
+                      background: `${badge.color}22`,
+                      padding:'1px 5px', lineHeight:1.5, flexShrink:0,
+                    }}>
+                      {badge.label}
+                    </span>
+                  )}
+                </div>
+                <div style={{ display:'flex', gap:'5px', fontSize:'10px', fontFamily:'var(--font-mono)', color:'rgba(255,255,255,0.5)', alignItems:'center' }}>
+                  <span style={{ background:'rgba(0,0,0,0.35)', padding:'1px 5px', textTransform:'uppercase', fontSize:'9px', color:accent }}>{type}</span>
+                  {md?.power > 0 && <span>{md.power} PWR</span>}
+                  {md?.category && (() => {
+                    const catColor = { physical:'#e07040', special:'#4090d0', status:'#aaa' }[md.category] || '#888';
+                    const catBg    = { physical:'rgba(224,112,64,0.18)', special:'rgba(64,144,208,0.18)', status:'rgba(170,170,170,0.10)' }[md.category] || 'transparent';
+                    const catLabel = { physical:'Physical', special:'Special', status:'Status' }[md.category] || md.category;
+                    return (
+                      <span style={{ color: catColor, background: catBg, border:`1px solid ${catColor}55`, padding:'1px 5px', fontSize:'9px', fontWeight:700, letterSpacing:'0.03em', textTransform:'uppercase' }}>
+                        {catLabel}
+                      </span>
+                    );
+                  })()}
+                  <span style={{ marginLeft:'auto', color:pp<=2?'#c05050':'rgba(255,255,255,0.45)' }}>{pp}/{maxPP} PP</span>
+                </div>
+              </button>
+            </MoveTooltip>
           );
         })}
       </div>

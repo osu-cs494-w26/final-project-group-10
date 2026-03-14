@@ -1,7 +1,11 @@
-// Will us when I add battle system
+/*
+ * SwitchPanel.jsx Party switching panel shown during the player's turn.
+ * Displays all six Pokémon with HP bars and allows swapping the active one.
+ */
 
 import React from 'react';
 
+// Renders the six switch slots and handles selection.
 export default function SwitchPanel({ team, activeIdx, onSwitch }) {
   const available = team
     .map((p, i) => ({ ...p, idx: i }))
