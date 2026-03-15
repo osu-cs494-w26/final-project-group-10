@@ -15,14 +15,14 @@ const BATTLE_SUBSECTIONS = [
 const NAV_LINKS = [
   { label: 'Pokédex',             key: 'pokedex',     activeKeys: ['pokedex'] },
   { label: 'Battle',              key: 'battlemode',  activeKeys: ['battlemode','select','battle','saveteam','battletrainer','trainerbattle'], hasDropdown: true },
-  { label: "Who's That Pokémon?", key: 'quiz',        activeKeys: ['quiz'] },
-  { label: 'Personality',         key: 'personality', activeKeys: ['personality'] },
+  { label: "Who's That Pokémon?", key: 'wtp',        activeKeys: ['wtp'] },
+  { label: 'Quizzes',             key: 'quiz', activeKeys: ['quiz', 'pokemon-quiz', 'evolution-quiz', 'pokemon-quiz-result', 'evolution-quiz-result'] },
 ];
 
 const ACCENT_FOR_KEY = {
   pokedex:     '#e06030',
   battlemode:  '#4090d0',
-  quiz:        '#60c060',
+  wtp:        '#60c060',
   personality: '#c8b820',
 };
 
