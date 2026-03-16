@@ -45,7 +45,7 @@ export default function GameModeCard({ mode, onSelect, index, featured = false }
         {remainingDescription ? <div>{remainingDescription}</div> : null}
       </div>
       <div style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:mode.accent, letterSpacing:'0.08em', textTransform:'uppercase', opacity:hovered ? 1 : 0, transition:'opacity 0.15s' }}>
-        Start Mode →
+        Configure Mode →
       </div>
     </div>
   );

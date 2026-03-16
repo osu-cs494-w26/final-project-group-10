@@ -3,22 +3,31 @@ import React from 'react';
 import GameModeCard from '../components/wtp/GameModeCard.jsx';
 import { WTP_MODES } from '../data/wtpModes.js';
 
-export default function WhosThatPokemonPage({ onSelectMode, setPage }) {
+export default function WhosThatPokemonPage({ onSelectMode, setPage, onViewStats }) {
   const featuredMode = WTP_MODES.find((mode) => mode.featured);
   const standardModes = WTP_MODES.filter((mode) => !mode.featured);
 
   return (
     <div style={{ minHeight:'calc(100vh - var(--nav-h))', display:'flex', flexDirection:'column', alignItems:'center', padding:'40px 24px', gap:'32px', position:'relative', zIndex:1 }}>
       <div style={{ width:'100%', maxWidth:'1180px', display:'flex', flexDirection:'column', gap:'24px' }}>
-        <button
-          type="button"
-          onClick={() => setPage('home')}
-          style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 22px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'13px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start' }}
-          onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
-          onMouseLeave={e => e.currentTarget.style.background='none'}
-        >
-          ← Back
-        </button>
+        <div style={{ display:'flex', gap:'10px', flexWrap:'wrap', justifyContent:'space-between', alignItems:'flex-start' }}>
+          <button
+            type="button"
+            onClick={() => setPage('home')}
+            style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 22px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'13px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start' }}
+            onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+            onMouseLeave={e => e.currentTarget.style.background='none'}
+          >
+            ← Back
+          </button>
+          <button
+            type="button"
+            onClick={onViewStats}
+            style={{ background:'rgba(255,255,255,0.08)', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 22px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'13px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start', marginLeft:'auto' }}
+          >
+            View Stats
+          </button>
+        </div>
 
         <div style={{ textAlign:'center' }}>
           <div style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.3em', textTransform:'uppercase', color:'var(--grey-500)', marginBottom:'8px' }}>Challenge Yourself</div>

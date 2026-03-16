@@ -19,6 +19,37 @@ export const EVOLUTION_STAGE_OPTIONS = [
   { value: 'final', label: 'Final Stage' },
 ];
 
+export const WTP_GAME_TYPES = [
+  {
+    key: 'freeplay',
+    label: 'Freeplay',
+    shortLabel: 'Freeplay',
+    description: 'Unlimited rounds with streak-focused scoring.',
+    roundLimit: null,
+  },
+  {
+    key: 'challenge-5',
+    label: '5 Round Challenge',
+    shortLabel: 'Easy',
+    description: 'A quick run that works well for short sessions.',
+    roundLimit: 5,
+  },
+  {
+    key: 'challenge-10',
+    label: '10 Round Challenge',
+    shortLabel: 'Medium',
+    description: 'Balanced run length for most players.',
+    roundLimit: 10,
+  },
+  {
+    key: 'challenge-20',
+    label: '20 Round Challenge',
+    shortLabel: 'Hard',
+    description: 'Long-form endurance run with more score variance.',
+    roundLimit: 20,
+  },
+];
+
 export const WTP_MODES = [
   {
     key: 'classic',
@@ -44,10 +75,11 @@ export const WTP_MODES = [
     allowsHints: true,
     maxGuesses: 1,
     setup: null,
+    gameTypes: ['freeplay'],
   },
   {
     key: 'generation',
-    title: 'Generation',
+    title: 'Generations',
     subtitle: 'We all have a favorite',
     description: 'Travels through the Eras of Pokémon. Pick a generation and guess the Pokémon from that region.',
     accent: '#ffb454',
@@ -56,10 +88,11 @@ export const WTP_MODES = [
     allowsHints: true,
     maxGuesses: 1,
     setup: 'generation',
+    gameTypes: WTP_GAME_TYPES.map((type) => type.key),
   },
   {
     key: 'type',
-    title: 'Type',
+    title: 'Types',
     subtitle: 'Element Focus',
     description: 'Master the elements. Choose a type and guess which Pokémon lurks behind the silhouette.',
     accent: '#ff7d7d',
@@ -68,6 +101,7 @@ export const WTP_MODES = [
     allowsHints: true,
     maxGuesses: 1,
     setup: 'type',
+    gameTypes: WTP_GAME_TYPES.map((type) => type.key),
   },
   {
     key: 'starters',
@@ -80,6 +114,7 @@ export const WTP_MODES = [
     allowsHints: true,
     maxGuesses: 1,
     setup: null,
+    gameTypes: WTP_GAME_TYPES.map((type) => type.key),
   },
   {
     key: 'legendary',
@@ -92,10 +127,11 @@ export const WTP_MODES = [
     allowsHints: true,
     maxGuesses: 1,
     setup: null,
+    gameTypes: WTP_GAME_TYPES.map((type) => type.key),
   },
   {
     key: 'color',
-    title: 'Color',
+    title: 'Colors',
     subtitle: 'Color Classification',
     description: 'A rainbow of possibilities. Choose a color and guess which Pokémon matches the silhouette.',
     accent: '#7df6d9',
@@ -104,10 +140,11 @@ export const WTP_MODES = [
     allowsHints: true,
     maxGuesses: 1,
     setup: 'color',
+    gameTypes: WTP_GAME_TYPES.map((type) => type.key),
   },
   {
     key: 'evolution',
-    title: 'Evolution',
+    title: 'Evolutions',
     subtitle: 'Stage Specific',
     description: 'From humble beginnings to final forms. Choose an evolution stage and identify the Pokémon.',
     accent: '#f59cc8',
@@ -116,6 +153,7 @@ export const WTP_MODES = [
     allowsHints: true,
     maxGuesses: 1,
     setup: 'evolution',
+    gameTypes: WTP_GAME_TYPES.map((type) => type.key),
   },
   {
     key: 'hard',
@@ -128,6 +166,7 @@ export const WTP_MODES = [
     allowsHints: false,
     maxGuesses: 1,
     setup: null,
+    gameTypes: WTP_GAME_TYPES.map((type) => type.key),
   },
 ];
 
@@ -146,4 +185,28 @@ export function getModeSetupOptions(setupKey) {
     default:
       return [];
   }
+}
+
+export function getModeSetupLabel(setupKey) {
+  switch (setupKey) {
+    case 'generation':
+      return 'Choose a generation';
+    case 'type':
+      return 'Choose a type';
+    case 'color':
+      return 'Choose a color';
+    case 'evolution':
+      return 'Choose an evolution stage';
+    default:
+      return 'Choose an option';
+  }
+}
+
+export function getGameTypeByKey(gameTypeKey) {
+  return WTP_GAME_TYPES.find((type) => type.key === gameTypeKey) || WTP_GAME_TYPES[0];
+}
+
+export function getAvailableGameTypes(mode) {
+  const allowedKeys = mode?.gameTypes?.length ? mode.gameTypes : WTP_GAME_TYPES.map((type) => type.key);
+  return WTP_GAME_TYPES.filter((type) => allowedKeys.includes(type.key));
 }

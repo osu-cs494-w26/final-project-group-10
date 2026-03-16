@@ -19,6 +19,12 @@ function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function pickRandomExcluding(items, excluded = []) {
+  const excludedSet = new Set(excluded);
+  const pool = items.filter((item) => !excludedSet.has(item));
+  return pickRandom(pool.length ? pool : items);
+}
+
 async function fetchJson(url) {
   if (jsonCache.has(url)) return jsonCache.get(url);
 
@@ -41,12 +47,49 @@ export async function getSpeciesCount() {
   return speciesCountPromise;
 }
 
-function hashDailyString(value) {
-  let hash = 0;
+function xmur3(value) {
+  let hash = 1779033703 ^ value.length;
+
   for (let index = 0; index < value.length; index += 1) {
-    hash = ((hash << 5) - hash + value.charCodeAt(index)) | 0;
+    hash = Math.imul(hash ^ value.charCodeAt(index), 3432918353);
+    hash = (hash << 13) | (hash >>> 19);
   }
-  return Math.abs(hash);
+
+  return function nextSeed() {
+    hash = Math.imul(hash ^ (hash >>> 16), 2246822507);
+    hash = Math.imul(hash ^ (hash >>> 13), 3266489909);
+    return (hash ^= hash >>> 16) >>> 0;
+  };
+}
+
+function mulberry32(seed) {
+  return function nextRandom() {
+    let value = (seed += 0x6D2B79F5);
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shiftDateKey(dateKey, dayDelta) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const nextDate = new Date(year, month - 1, day + dayDelta);
+  const nextYear = nextDate.getFullYear();
+  const nextMonth = String(nextDate.getMonth() + 1).padStart(2, '0');
+  const nextDay = String(nextDate.getDate()).padStart(2, '0');
+  return `${nextYear}-${nextMonth}-${nextDay}`;
+}
+
+async function getSpeciesById(speciesId) {
+  return fetchJson(`${API_BASE}/pokemon-species/${speciesId}`);
+}
+
+async function getDailySpeciesCandidate(dateKey, attempt = 0) {
+  const count = await getSpeciesCount();
+  const seededHash = xmur3(`${dateKey}:${attempt}`);
+  const random = mulberry32(seededHash());
+  const speciesId = Math.floor(random() * count) + 1;
+  return getSpeciesById(speciesId);
 }
 
 function parseGenerationLabel(generationName) {
@@ -147,19 +190,37 @@ async function getColorSpecies(colorValue) {
 }
 
 async function getDailyPokemonName(dateKey) {
-  const count = await getSpeciesCount();
-  const speciesId = (hashDailyString(dateKey) % count) + 1;
-  const species = await fetchJson(`${API_BASE}/pokemon-species/${speciesId}`);
-  return species.name;
+  const recentChainUrls = new Set();
+
+  for (let dayOffset = 1; dayOffset <= 2; dayOffset += 1) {
+    const priorDateKey = shiftDateKey(dateKey, -dayOffset);
+    const priorSpecies = await getDailySpeciesCandidate(priorDateKey);
+    if (priorSpecies.evolution_chain?.url) {
+      recentChainUrls.add(priorSpecies.evolution_chain.url);
+    }
+  }
+
+  for (let attempt = 0; attempt < 16; attempt += 1) {
+    const species = await getDailySpeciesCandidate(dateKey, attempt);
+    const evolutionChainUrl = species.evolution_chain?.url || null;
+
+    if (!evolutionChainUrl || !recentChainUrls.has(evolutionChainUrl)) {
+      return species.name;
+    }
+  }
+
+  const fallbackSpecies = await getDailySpeciesCandidate(dateKey);
+  return fallbackSpecies.name;
 }
 
-async function getRandomPokemonByEvolutionStage(stage) {
+async function getRandomPokemonByEvolutionStage(stage, excluded = []) {
   const count = await getSpeciesCount();
+  const excludedSet = new Set(excluded);
 
   for (let attempts = 0; attempts < 48; attempts += 1) {
     const candidateId = Math.floor(Math.random() * count) + 1;
     const candidate = await getPokemonRoundData(candidateId);
-    if (candidate.evolutionStage === stage) {
+    if (candidate.evolutionStage === stage && !excludedSet.has(candidate.speciesName)) {
       return candidate.speciesName;
     }
   }
@@ -167,29 +228,43 @@ async function getRandomPokemonByEvolutionStage(stage) {
   throw new Error(`Could not find an evolution-stage Pokemon for ${stage}.`);
 }
 
-export async function getModePokemonName(modeKey, setup, dateKey) {
+async function getRandomSpeciesName(excluded = []) {
+  const count = await getSpeciesCount();
+  const excludedSet = new Set(excluded);
+
+  for (let attempts = 0; attempts < 64; attempts += 1) {
+    const randomId = Math.floor(Math.random() * count) + 1;
+    const species = await fetchJson(`${API_BASE}/pokemon-species/${randomId}`);
+    if (!excludedSet.has(species.name)) {
+      return species.name;
+    }
+  }
+
+  const fallbackId = Math.floor(Math.random() * count) + 1;
+  const fallbackSpecies = await fetchJson(`${API_BASE}/pokemon-species/${fallbackId}`);
+  return fallbackSpecies.name;
+}
+
+export async function getModePokemonName(modeKey, setup, dateKey, excluded = []) {
   switch (modeKey) {
     case 'daily':
       return getDailyPokemonName(dateKey);
     case 'generation':
-      return pickRandom(await getGenerationSpecies(setup?.value));
+      return pickRandomExcluding(await getGenerationSpecies(setup?.value), excluded);
     case 'type':
-      return pickRandom(await getTypePokemon(setup?.value));
+      return pickRandomExcluding(await getTypePokemon(setup?.value), excluded);
     case 'starters':
-      return pickRandom(STARTER_POKEMON);
+      return pickRandomExcluding(STARTER_POKEMON, excluded);
     case 'legendary':
-      return pickRandom(LEGENDARY_MYTHIC_POKEMON);
+      return pickRandomExcluding(LEGENDARY_MYTHIC_POKEMON, excluded);
     case 'color':
-      return pickRandom(await getColorSpecies(setup?.value));
+      return pickRandomExcluding(await getColorSpecies(setup?.value), excluded);
     case 'evolution':
-      return getRandomPokemonByEvolutionStage(setup?.value);
+      return getRandomPokemonByEvolutionStage(setup?.value, excluded);
     case 'hard':
     case 'classic':
     default: {
-      const count = await getSpeciesCount();
-      const randomId = Math.floor(Math.random() * count) + 1;
-      const species = await fetchJson(`${API_BASE}/pokemon-species/${randomId}`);
-      return species.name;
+      return getRandomSpeciesName(excluded);
     }
   }
 }

@@ -27,6 +27,7 @@ import EvolutionQuizResultPage from './pages/EvolutionQuizResultPage.jsx';
 // import new WTP pages
 import WhosThatPokemonPage from './pages/WhosThatPokemonPage.jsx';
 import WhosThatPokemonGamePage from './pages/WhosThatPokemonGamePage.jsx';
+import WhosThatPokemonStatsPage from './pages/WhosThatPokemonStatsPage.jsx';
 
 // Initialises auth, page routing, and battle state.
 export default function App() {
@@ -39,8 +40,9 @@ export default function App() {
   const [quizResult,   setQuizResult]   = useState(null); 
   const [pokemonQuizResult, setPokemonQuizResult] = useState(null);
   const [evolutionQuizResult, setEvolutionQuizResult] = useState(null);
-  const [wtpSession, setWtpSession] = useState({ modeKey: null, setup: null });
+  const [wtpSession, setWtpSession] = useState({ modeKey: null, config: null });
   const [wtpPokedexTarget, setWtpPokedexTarget] = useState(null);
+  const skipNextScrollResetRef = React.useRef(false);
 
   useEffect(() => {
     if (wtpPokedexTarget) {
@@ -49,8 +51,18 @@ export default function App() {
   }, [wtpPokedexTarget]);
 
   useLayoutEffect(() => {
+    if (skipNextScrollResetRef.current) {
+      skipNextScrollResetRef.current = false;
+      return;
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [page]);
+
+  const setPagePreserveScroll = (nextPage) => {
+    skipNextScrollResetRef.current = true;
+    setPage(nextPage);
+  };
 
 
 
@@ -116,19 +128,36 @@ export default function App() {
       return (
         <WhosThatPokemonPage
           setPage={setPage}
+          onViewStats={() => setPage('wtp-stats')}
           onSelectMode={(modeKey) => {
-            setWtpSession({ modeKey, setup: null });
+            setWtpSession({ modeKey, config: null });
             setPage('wtp-game');
           }}
+        />
+      );
+    case 'wtp-stats':
+      return (
+        <WhosThatPokemonStatsPage
+          onBack={() => setPage('wtp')}
+          onOpenModes={() => setPage('wtp')}
         />
       );
     case 'wtp-game':
       return (
         <WhosThatPokemonGamePage
+          key={`${wtpSession.modeKey || 'mode'}:${wtpSession.config?.gameType || 'game'}:${wtpSession.config?.setup?.value || 'pool'}`}
           modeKey={wtpSession.modeKey}
-          initialSetup={wtpSession.setup}
-          onBackToModes={() => setPage('wtp')}
-          onUpdateSession={(modeKey, setup) => setWtpSession({ modeKey, setup })}
+          initialConfig={wtpSession.config}
+          onBackToModes={(options) => {
+            if (options?.preserveScroll) {
+              setPagePreserveScroll('wtp');
+              return;
+            }
+
+            setPage('wtp');
+          }}
+          onViewStats={() => setPage('wtp-stats')}
+          onUpdateSession={(modeKey, config) => setWtpSession({ modeKey, config })}
           onViewPokedex={(pokemonName) => {
             // TODO: replace this state handoff with the project Pokédex detail page once it is available.
             setWtpPokedexTarget(pokemonName);
@@ -150,7 +179,7 @@ export default function App() {
 
   // Only show the scrolling Pokédex grid on home and battle pages.
   const showBackground = page === 'home' || page === 'battlemode' || page === 'battletrainer';
-  const pageAnimation = page === 'wtp' || page === 'wtp-game' ? 'fadeInFast 0.2s ease' : 'fadeIn 0.3s ease';
+  const pageAnimation = page === 'wtp' || page === 'wtp-game' || page === 'wtp-stats' ? 'fadeInFast 0.2s ease' : 'fadeIn 0.3s ease';
 
   return (
     <div key={page} style={{ animation: pageAnimation, position: 'relative', zIndex: 1 }}>
