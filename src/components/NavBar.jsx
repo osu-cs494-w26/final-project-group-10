@@ -15,7 +15,7 @@ const BATTLE_SUBSECTIONS = [
 const NAV_LINKS = [
   { label: 'Pokédex',             key: 'pokedex',     activeKeys: ['pokedex'] },
   { label: 'Battle',              key: 'battlemode',  activeKeys: ['battlemode','select','battle','saveteam','battletrainer','trainerbattle'], hasDropdown: true },
-  { label: "Who's That Pokémon?", key: 'wtp',        activeKeys: ['wtp'] },
+  { label: "Who's That Pokémon?", key: 'wtp',        activeKeys: ['wtp', 'wtp-game'] },
   { label: 'Quizzes',             key: 'quiz', activeKeys: ['quiz', 'pokemon-quiz', 'evolution-quiz', 'pokemon-quiz-result', 'evolution-quiz-result'] },
 ];
 

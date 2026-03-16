@@ -3,7 +3,7 @@
  * battle team state, and renders the NavBar + active page.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import './styles/global.css';
 
 import { useAuth }          from './hooks/useAuth.js';
@@ -24,6 +24,9 @@ import PokemonQuizPage from './pages/PokemonQuizPage.jsx';
 import EvolutionQuizPage from './pages/EvolutionQuizPage.jsx';
 import PokemonQuizResultPage from './pages/PokemonQuizResultPage.jsx';
 import EvolutionQuizResultPage from './pages/EvolutionQuizResultPage.jsx';
+// import new WTP pages
+import WhosThatPokemonPage from './pages/WhosThatPokemonPage.jsx';
+import WhosThatPokemonGamePage from './pages/WhosThatPokemonGamePage.jsx';
 
 // Initialises auth, page routing, and battle state.
 export default function App() {
@@ -36,6 +39,18 @@ export default function App() {
   const [quizResult,   setQuizResult]   = useState(null); 
   const [pokemonQuizResult, setPokemonQuizResult] = useState(null);
   const [evolutionQuizResult, setEvolutionQuizResult] = useState(null);
+  const [wtpSession, setWtpSession] = useState({ modeKey: null, setup: null });
+  const [wtpPokedexTarget, setWtpPokedexTarget] = useState(null);
+
+  useEffect(() => {
+    if (wtpPokedexTarget) {
+      console.info('Pending Pokédex handoff from WTP:', wtpPokedexTarget);
+    }
+  }, [wtpPokedexTarget]);
+
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [page]);
 
 
 
@@ -97,6 +112,29 @@ export default function App() {
           );
     case 'quiz':
       return <QuizPage setPage={setPage} />;
+    case 'wtp':
+      return (
+        <WhosThatPokemonPage
+          setPage={setPage}
+          onSelectMode={(modeKey) => {
+            setWtpSession({ modeKey, setup: null });
+            setPage('wtp-game');
+          }}
+        />
+      );
+    case 'wtp-game':
+      return (
+        <WhosThatPokemonGamePage
+          modeKey={wtpSession.modeKey}
+          initialSetup={wtpSession.setup}
+          onBackToModes={() => setPage('wtp')}
+          onUpdateSession={(modeKey, setup) => setWtpSession({ modeKey, setup })}
+          onViewPokedex={(pokemonName) => {
+            // TODO: replace this state handoff with the project Pokédex detail page once it is available.
+            setWtpPokedexTarget(pokemonName);
+          }}
+        />
+      );
     case 'pokemon-quiz':
       return <PokemonQuizPage setPage={setPage} setPokemonQuizResult={setPokemonQuizResult} />;
     case 'evolution-quiz':
@@ -112,9 +150,10 @@ export default function App() {
 
   // Only show the scrolling Pokédex grid on home and battle pages.
   const showBackground = page === 'home' || page === 'battlemode' || page === 'battletrainer';
+  const pageAnimation = page === 'wtp' || page === 'wtp-game' ? 'fadeInFast 0.2s ease' : 'fadeIn 0.3s ease';
 
   return (
-    <div key={page} style={{ animation: 'fadeIn 0.3s ease', position: 'relative', zIndex: 1 }}>
+    <div key={page} style={{ animation: pageAnimation, position: 'relative', zIndex: 1 }}>
       {showBackground && <PokedexBackground />}
       <NavBar page={page} setPage={setPage} user={user} onSignOut={signOut} onQuickBattle={() => { setBattleMode('random'); setPage('battle'); }} />
       {renderPage()}
