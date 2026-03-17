@@ -69,6 +69,8 @@ export async function fetchPokeData(name) {
     // Keep these for reference if needed
     animatedSprite,
     staticSprite,
+    height:       data.height,   
+    weight:       data.weight
   };
   pokeCache[name] = entry;
   return entry;
