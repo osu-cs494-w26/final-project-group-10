@@ -9,7 +9,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   fetchAllNatures, 
   getAllPokemonList, 
-  selectTeamForNature, 
+  selectTeamForNature,
+  generateTeamVariants, 
   computePreferredStats, 
   findMatchingNature 
 } from '../utils/personalityUtils';
@@ -154,34 +155,33 @@ export default function PersonalityQuizPage({ setPage, setQuizResult }) {
     }
   };
 
-  const computeResults = async (scores) => {
-    setLoading(true);
-    try {
-      // Determine preferred and least stats
-      const { preferred, least } = computePreferredStats(scores);
-      console.log(`Preferred: ${preferred}, Least: ${least}`);
 
-      // Find matching nature
-      const nature = findMatchingNature(natures, preferred, least);
-      console.log(`Matching nature: ${nature.name}`);
+const computeResults = async (scores) => {
+  setLoading(true);
+  try {
+    const { preferred, least } = computePreferredStats(scores);
+    const nature = findMatchingNature(natures, preferred, least);
 
-      // Build team using Gen 1-5 list
-      const team = await selectTeamForNature(nature, allPokemon);
+    // Generate all three team variants
+    const teams = await generateTeamVariants(nature, allPokemon);
 
-      // Save result and go to result page
-      setQuizResult({ nature, team });
-      setPage('personality-result');
-    } catch (error) {
-      console.error('Error building team:', error);
-      alert('Something went wrong. Please try again.');
-      // Reset quiz
-      setCurrentIndex(0);
-      setAnswers([]);
-      setStatScores({ attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 });
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Save result with all teams
+    setQuizResult({ 
+      nature, 
+      teams, // object with balanced, offensive, defensive
+    });
+    setPage('personality-result');
+  } catch (error) {
+    console.error('Error building teams:', error);
+    alert('Something went wrong. Please try again.');
+    // reset quiz
+    setCurrentIndex(0);
+    setAnswers([]);
+    setStatScores({ attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 });
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (initialLoading) {
     return (
@@ -228,7 +228,7 @@ export default function PersonalityQuizPage({ setPage, setQuizResult }) {
         {loading ? (
           <div style={S.loadingContainer}>
             <div style={S.loadingText}>Analyzing your personality...</div>
-            <div style={S.loadingSubtext}>Summoning your ideal team from over 1000 Pokémon</div>
+            <div style={S.loadingSubtext}>Summoning your ideal team from over 650 Pokémon</div>
           </div>
         ) : (
           <>
