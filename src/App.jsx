@@ -172,8 +172,8 @@ const renderPage = () => {
           onViewStats={() => setPage('wtp-stats')}
           onUpdateSession={(modeKey, config) => setWtpSession({ modeKey, config })}
           onViewPokedex={(pokemonName) => {
-            // TODO: replace this state handoff with the project Pokédex detail page once it is available.
-            setWtpPokedexTarget(pokemonName);
+            setSelectedPokemon(pokemonName)
+            setPage(`pokedex/${pokemonName}`)
           }}
         />
       );
