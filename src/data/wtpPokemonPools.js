@@ -1,3 +1,8 @@
+/*
+* wtpPokemonPools.js
+* Predefined pools of Pokémon for starters and legendary/mythic categories.
+*/
+
 export const STARTER_POKEMON = [
   'bulbasaur', 'charmander', 'squirtle',
   'chikorita', 'cyndaquil', 'totodile',

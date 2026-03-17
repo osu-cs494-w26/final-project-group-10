@@ -1,3 +1,8 @@
+/*
+* GameModeCard.jsx
+* Component for rendering a game mode selection card in the "Who's That Pokémon?" mode selection screen.
+*/
+
 import React, { useState } from 'react';
 
 export default function GameModeCard({ mode, onSelect, index, featured = false }) {

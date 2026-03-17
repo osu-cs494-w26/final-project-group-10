@@ -1,3 +1,9 @@
+/*
+* wtpModes.js
+* Data and configuration for "Who's That Pokémon?" game modes and options.
+*/
+
+// All different gamemode setup options for the modes that require them (generation, type, color, evolution stage)
 export const GENERATION_OPTIONS = Array.from({ length: 9 }, (_, index) => ({
   value: String(index + 1),
   label: `Generation ${index + 1}`,
@@ -19,6 +25,7 @@ export const EVOLUTION_STAGE_OPTIONS = [
   { value: 'final', label: 'Final Stage' },
 ];
 
+// Defines the different game types available for each mode, each with its own scoring and round limit rules.
 export const WTP_GAME_TYPES = [
   {
     key: 'freeplay',
@@ -50,6 +57,7 @@ export const WTP_GAME_TYPES = [
   },
 ];
 
+// All different game modes each with it's own theme
 export const WTP_MODES = [
   {
     key: 'classic',
@@ -172,6 +180,7 @@ export const WTP_MODES = [
 
 export const WTP_MODE_MAP = Object.fromEntries(WTP_MODES.map((mode) => [mode.key, mode]));
 
+// Helper functions to retrieve mode setup options and labels based on the mode's setup key.
 export function getModeSetupOptions(setupKey) {
   switch (setupKey) {
     case 'generation':
@@ -187,6 +196,7 @@ export function getModeSetupOptions(setupKey) {
   }
 }
 
+// Returns the label to display for the mode setup selection based on the mode's setup key.
 export function getModeSetupLabel(setupKey) {
   switch (setupKey) {
     case 'generation':
@@ -202,10 +212,12 @@ export function getModeSetupLabel(setupKey) {
   }
 }
 
+// Helper functions to retrieve game type information based on the selected game type key and mode configuration.
 export function getGameTypeByKey(gameTypeKey) {
   return WTP_GAME_TYPES.find((type) => type.key === gameTypeKey) || WTP_GAME_TYPES[0];
 }
 
+// Returns the list of available game types for a given mode, filtering based on the mode's allowed game types if specified.
 export function getAvailableGameTypes(mode) {
   const allowedKeys = mode?.gameTypes?.length ? mode.gameTypes : WTP_GAME_TYPES.map((type) => type.key);
   return WTP_GAME_TYPES.filter((type) => allowedKeys.includes(type.key));

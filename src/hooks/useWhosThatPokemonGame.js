@@ -1,3 +1,9 @@
+/*
+useWhosThatPokemonGame.js
+Manages the state and logic for playing a game of "Who's That Pokemon?" in various modes and game types, including daily challenges and freeplay. 
+Handles round progression, scoring, hint revealing, and interaction with local storage for daily progress tracking.
+*/
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { getGameTypeByKey, WTP_MODE_MAP } from '../data/wtpModes.js';
@@ -10,6 +16,7 @@ import {
   setDailyProgress,
 } from '../utils/wtpStorage.js';
 
+// Timezone and date formatter for daily mode
 const DAILY_TIMEZONE = 'America/Los_Angeles';
 const DAILY_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   timeZone: DAILY_TIMEZONE,
@@ -19,18 +26,23 @@ const DAILY_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
 });
 const DAILY_OVERRIDE_KEY = 'pokiportal:wtp:daily-date-override';
 
-function buildHintSequence(round) {
+// Builds the list of hints to show for a given round, in a consistent order.
+function buildHintSequence(round, modeKey) {
   const hints = [
-    {
-      key: 'generation',
-      label: 'Generation',
-      value: round.generationLabel,
-    },
-    {
-      key: 'types',
-      label: 'Type',
-      value: round.types.map((type) => type[0].toUpperCase() + type.slice(1)).join(' / '),
-    },
+    modeKey === 'generation'
+      ? null
+      : {
+          key: 'generation',
+          label: 'Generation',
+          value: round.generationLabel,
+        },
+    modeKey === 'type'
+      ? null
+      : {
+          key: 'types',
+          label: 'Type',
+          value: round.types.map((type) => type[0].toUpperCase() + type.slice(1)).join(' / '),
+        },
     {
       key: 'size',
       label: 'Size',
@@ -61,6 +73,9 @@ function buildHintSequence(round) {
   return hints.filter(Boolean);
 }
 
+
+// functions for managing daily mode keys and overrides, ensuring that the correct daily Pokemon is loaded and that progress 
+// is tracked accurately across local days and potential testing overrides.
 function getTodayKey() {
   return getTodayKeyForDate(new Date());
 }
@@ -101,6 +116,7 @@ function getDailyProgressKey(progress) {
   return null;
 }
 
+// Initializes the session state for a new game, based on the selected game type, setting up counters and trackers for rounds, scores, hints, and used Pokémon.
 function createSessionState(gameTypeKey) {
   const gameType = getGameTypeByKey(gameTypeKey || 'freeplay');
   return {
@@ -119,6 +135,7 @@ function createSessionState(gameTypeKey) {
   };
 }
 
+// Scoring function that calculates the score for a round based on correctness, time taken, hints used, and round number.
 function calculateRoundScore({ isCorrect, timeMs, hintsUsed, roundNumber }) {
   if (!isCorrect) {
     return {
@@ -153,6 +170,8 @@ function getEmptyRoundState() {
   };
 }
 
+// Custom React hook that encapsulates the logic and state management for the game, supporting different modes and game types
+// Handles round progression, scoring, hint revealing, and interaction with local storage for daily progress tracking.
 export function useWhosThatPokemonGame(modeKey, config) {
   const [round, setRound] = useState(null);
   const [guess, setGuess] = useState('');
@@ -232,7 +251,7 @@ export function useWhosThatPokemonGame(modeKey, config) {
           metrics: null,
         });
         setRunSummary(null);
-        setRevealedHints(mode.allowsHints ? buildHintSequence(nextRound).length : 0);
+        setRevealedHints(mode.allowsHints ? buildHintSequence(nextRound, mode.key).length : 0);
         setRoundState('resolved');
         return;
           }
@@ -262,9 +281,10 @@ export function useWhosThatPokemonGame(modeKey, config) {
 
   const hints = useMemo(() => {
     if (!round || !mode.allowsHints) return [];
-    return buildHintSequence(round);
-  }, [mode.allowsHints, round]);
+    return buildHintSequence(round, mode.key);
+  }, [mode.allowsHints, mode.key, round]);
 
+  // Handles the logic for when a player submits a guess, including scoring, updating session state, and recording progress for daily mode.
   function submitGuess() {
     if (!round || roundState !== 'playing' || submitLockRef.current) return;
     submitLockRef.current = true;
@@ -390,12 +410,14 @@ export function useWhosThatPokemonGame(modeKey, config) {
     setRevealedHints(hints.length);
     setRoundState('resolved');
   }
-
+  
+  // Handles revealing the next hint for the current round, if hints are allowed and the round is still in progress.
   function revealNextHint() {
     if (!mode.allowsHints || roundState !== 'playing') return;
     setRevealedHints((current) => Math.min(current + 1, hints.length));
   }
 
+  // Advances to the next round in a run, resetting relevant state and loading a new Pokemon, while keeping the current session intact.
   function advanceRound() {
     submitLockRef.current = false;
     const nextState = getEmptyRoundState();
@@ -408,6 +430,7 @@ export function useWhosThatPokemonGame(modeKey, config) {
     setRoundNonce((value) => value + 1);
   }
 
+  // Restarts the entire session, resetting all state including the session state, and loading a new Pokemon for the first round.
   function restartSession() {
     submitLockRef.current = false;
     const nextState = getEmptyRoundState();

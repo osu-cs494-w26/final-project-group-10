@@ -1,3 +1,9 @@
+/*
+* HintPanel.jsx
+* Page component for the hint panel in Who's That Pokémon? game mode, showing revealed hints and allowing players to reveal more hints if the mode allows it. 
+* Hints are displayed in a consistent order and redundant hints are filtered out based on the selected mode.
+*/
+
 import React from 'react';
 
 const HINT_ORDER = [
@@ -9,8 +15,15 @@ const HINT_ORDER = [
   { key: 'letter', label: 'First Letter' },
 ];
 
+// Renders the hint panel on the right side of the game screen, showing revealed hints and a button to reveal more.
 export default function HintPanel({ mode, hintList, remainingHints, onRevealHint, roundState }) {
   const revealedHints = new Map(hintList.map((hint) => [hint.key, hint.value]));
+  // filter redundant hints
+  const visibleHints = HINT_ORDER.filter((hint) => {
+    if (mode.key === 'generation' && hint.key === 'generation') return false;
+    if (mode.key === 'type' && hint.key === 'types') return false;
+    return true;
+  });
 
   return (
     <section style={{ background:'rgba(0,0,0,0.80)', border:'1px solid var(--border)', padding:'24px', minHeight:'540px', display:'flex', flexDirection:'column' }}>
@@ -47,7 +60,7 @@ export default function HintPanel({ mode, hintList, remainingHints, onRevealHint
         </div>
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:'12px', flex:1 }}>
-          {HINT_ORDER.map((hint) => {
+          {visibleHints.map((hint) => {
             const value = revealedHints.get(hint.key);
             const isRevealed = revealedHints.has(hint.key);
 

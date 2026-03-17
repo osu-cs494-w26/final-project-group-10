@@ -1,3 +1,9 @@
+/*
+* wtpApi.js
+* API utility functions for the "Who's That Pokémon?" game mode. 
+* This module handles fetching Pokémon data from the PokeAPI, selecting random Pokémon based on various criteria, and preparing data for use in the game rounds.
+*/
+
 import { LEGENDARY_MYTHIC_POKEMON, STARTER_POKEMON } from '../data/wtpPokemonPools.js';
 
 const API_BASE = 'https://pokeapi.co/api/v2';
@@ -15,16 +21,19 @@ function titleCase(value) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+// Utility function to pick a random item from an array
 function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+// Utility function to pick a random item from an array while excluding certain items
 function pickRandomExcluding(items, excluded = []) {
   const excludedSet = new Set(excluded);
   const pool = items.filter((item) => !excludedSet.has(item));
   return pickRandom(pool.length ? pool : items);
 }
 
+// Fetch JSON data with caching to avoid redundant requests to the PokeAPI
 async function fetchJson(url) {
   if (jsonCache.has(url)) return jsonCache.get(url);
 
@@ -39,6 +48,8 @@ async function fetchJson(url) {
   return promise;
 }
 
+// Fetch the total count of Pokémon species from the PokeAPI, caching the result for future calls to optimize performance. 
+// This is used to determine the range for random species selection.
 export async function getSpeciesCount() {
   if (!speciesCountPromise) {
     speciesCountPromise = fetchJson(`${API_BASE}/pokemon-species?limit=1`).then((data) => data.count);
@@ -62,6 +73,7 @@ function xmur3(value) {
   };
 }
 
+// A seeded pseudorandom number generator based on the Mulberry32 algorithm, which provides a good balance of speed and randomness quality for our use case.
 function mulberry32(seed) {
   return function nextRandom() {
     let value = (seed += 0x6D2B79F5);
@@ -71,6 +83,8 @@ function mulberry32(seed) {
   };
 }
 
+// Shift a date string in 'YYYY-MM-DD' format by a specified number of days, returning the new date as a string in the same format. 
+// This is used to generate consistent daily Pokémon based on the date.
 function shiftDateKey(dateKey, dayDelta) {
   const [year, month, day] = dateKey.split('-').map(Number);
   const nextDate = new Date(year, month - 1, day + dayDelta);
@@ -80,10 +94,13 @@ function shiftDateKey(dateKey, dayDelta) {
   return `${nextYear}-${nextMonth}-${nextDay}`;
 }
 
+// Fetch a Pokémon species by its ID from the PokeAPI, utilizing caching to optimize performance for repeated requests.
 async function getSpeciesById(speciesId) {
   return fetchJson(`${API_BASE}/pokemon-species/${speciesId}`);
 }
 
+// Generate a daily Pokémon species candidate based on a date key and an attempt number, using a seeded random approach 
+// to ensure consistency across users while allowing for retries if necessary.
 async function getDailySpeciesCandidate(dateKey, attempt = 0) {
   const count = await getSpeciesCount();
   const seededHash = xmur3(`${dateKey}:${attempt}`);
@@ -92,6 +109,7 @@ async function getDailySpeciesCandidate(dateKey, attempt = 0) {
   return getSpeciesById(speciesId);
 }
 
+// Convert a generation identifier from the PokeAPI (e.g., 'generation-i') into a more human-readable format (e.g., 'Generation I') for display purposes in the game.
 function parseGenerationLabel(generationName) {
   return generationName
     .replace('generation-', 'Generation ')
@@ -106,6 +124,8 @@ function parseGenerationLabel(generationName) {
     .replace(/\bix\b/g, 'IX');
 }
 
+// Resolve the best available artwork for a Pokémon, prioritizing official artwork, then home sprites, and finally default sprites, 
+// to ensure the highest quality image is used in the game when available.
 function resolveArtwork(pokemon) {
   return (
     pokemon.sprites?.other?.['official-artwork']?.front_default ||
@@ -115,6 +135,7 @@ function resolveArtwork(pokemon) {
   );
 }
 
+// Recursively build a map of Pokémon species names to their evolution stages (base, middle, final, single) based on the structure of the evolution chain data from the PokeAPI.
 function buildEvolutionStageMap(chainNode, stageMap = {}, depth = 0) {
   const nextBranches = chainNode.evolves_to || [];
   let stage = 'single';
@@ -137,11 +158,15 @@ export function normalizePokemonGuess(value) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
+// Build a list of normalized guess aliases for a Pokémon based on its name and species name, ensuring that 
+// players can guess using either the Pokémon's name or its species name without worrying about formatting differences.
 function buildGuessAliases(pokemonName, speciesName) {
   const names = [pokemonName, speciesName].filter(Boolean);
   return Array.from(new Set(names.map((name) => normalizePokemonGuess(name))));
 }
 
+// Fetch and compile all relevant data for a Pokémon given its identifier (name or ID), including its species information, 
+// evolution chain, flavor text, and other attributes needed for the game rounds.
 export async function getPokemonRoundData(identifier) {
   const pokemon = await fetchJson(`${API_BASE}/pokemon/${identifier}`);
   const species = await fetchJson(pokemon.species.url);
@@ -173,6 +198,8 @@ export async function getPokemonRoundData(identifier) {
     evolutionStage: stageMap[species.name] || 'single',
   };
 }
+
+// get functions to fetch lists of Pokémon species based on different criteria
 
 async function getGenerationSpecies(generationValue) {
   const data = await fetchJson(`${API_BASE}/generation/${generationValue}`);
@@ -245,6 +272,8 @@ async function getRandomSpeciesName(excluded = []) {
   return fallbackSpecies.name;
 }
 
+// Main function to get a Pokémon name based on the selected game mode and setup options, utilizing 
+// the appropriate helper functions to fetch and filter Pokémon species according to the criteria defined by each mode.
 export async function getModePokemonName(modeKey, setup, dateKey, excluded = []) {
   switch (modeKey) {
     case 'daily':

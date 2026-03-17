@@ -1,3 +1,8 @@
+/*
+* ScorePanel.jsx
+* Component for displaying the player's current stats and progress in the "Who's That Pokémon?" game mode.
+*/
+
 import React from 'react';
 
 function StatCard({ label, value, accent = 'var(--white)' }) {

@@ -1,3 +1,9 @@
+/*
+* ModeSetupPanel.jsx
+* React component that renders a modal panel for selecting the game type and mode setup options in the "Who's That Pokémon?" game mode. 
+* It displays available game types, mode-specific setup options, and a start button to begin the game session with the selected configuration. 
+*/
+
 import React from 'react';
 
 import {

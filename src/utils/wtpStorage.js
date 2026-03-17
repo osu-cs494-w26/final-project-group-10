@@ -1,3 +1,10 @@
+/*
+* wtpStorage.js
+* Utility functions for storing and retrieving player statistics for the "Who's That Pokémon?" game modes using localStorage.
+* Note: This implementation assumes that localStorage is available and may not work correctly in private browsing modes or environments without localStorage support. 
+* It also does not implement any data expiration or cleanup, so stats will persist indefinitely unless manually cleared by the user.
+*/
+
 import { WTP_GAME_TYPES, WTP_MODES } from '../data/wtpModes.js';
 
 const STORAGE_PREFIX = 'pokiportal:wtp';
@@ -48,7 +55,7 @@ export function getDefaultModeStats() {
     score: 0,
   };
 }
-
+ // Base stats structure for a game mode or category, with all fields initialized to default values.
 function withComputedStats(stats) {
   const roundsPlayed = stats.roundsPlayed || 0;
   const correctGuesses = stats.correctGuesses || 0;
@@ -83,6 +90,7 @@ function createStatsStore() {
   };
 }
 
+// Accumulates stats by summing additive fields and taking the max of best scores/streaks.
 function accumulateStats(base, delta) {
   return {
     roundsPlayed: base.roundsPlayed + delta.roundsPlayed,
@@ -105,6 +113,9 @@ function accumulateStats(base, delta) {
   };
 }
 
+// Merges two stats objects, summing additive fields and taking the max of best scores/streaks. 
+// If both have roundsPlayed > 0, currentStreak is reset to null to avoid confusion. Otherwise, it takes the non-zero streak or retains the existing one. 
+// This is used when combining stats from different buckets where we can't be sure if they are sequential or not.
 function mergeStats(base, incoming) {
   return {
     roundsPlayed: base.roundsPlayed + incoming.roundsPlayed,
@@ -127,10 +138,12 @@ function mergeStats(base, incoming) {
   };
 }
 
+// Aggregates stats from multiple buckets by merging their overall or category stats, depending on the specified gameType.
 function aggregateBuckets(buckets, gameType) {
   return buckets.reduce((combined, bucket) => mergeStats(combined, getBucketStats(bucket, gameType)), getDefaultModeStats());
 }
 
+// Builds a stats object from legacy storage format for a given mode key. Returns null if no legacy data is found for that mode.
 function buildLegacyFreeplayStats(modeKey) {
   const legacy = readJson(legacyStatsKey(modeKey), null);
   if (!legacy) return null;
@@ -150,6 +163,9 @@ function buildLegacyFreeplayStats(modeKey) {
   };
 }
 
+// Migrates legacy stats from the old storage format to the new structured format. 
+// It reads legacy stats for each mode, accumulates them into the new store structure, and saves the new store back to localStorage. 
+// If no legacy data is found, it simply returns a new empty stats store.
 function migrateLegacyStore() {
   const store = createStatsStore();
   let migrated = false;
@@ -170,6 +186,7 @@ function migrateLegacyStore() {
   return store;
 }
 
+// Retrieves the stats store from localStorage. If the stored version is outdated, it migrates legacy data to the new format.
 function getStatsStore() {
   const existing = readJson(STATS_V2_KEY, null);
   if (existing?.version === 2) {
@@ -195,10 +212,14 @@ function getStatsStore() {
   return migrateLegacyStore();
 }
 
+// Saves the provided stats store to localStorage under the defined key. This should be called after any updates to the stats store to persist changes.
 function writeStatsStore(store) {
   writeJson(STATS_V2_KEY, store);
 }
 
+// Retrieves or creates a setup bucket within a mode bucket based on the provided setup value. 
+// If the setup value is falsy, it returns null. If the setup bucket for the given value does not exist, it initializes it with a new mode bucket structure. 
+// This allows for dynamic tracking of stats for different setups within a game mode.
 function getOrCreateSetupBucket(modeBucket, setupValue) {
   if (!setupValue) return null;
   if (!modeBucket.setups[setupValue]) {
@@ -207,11 +228,13 @@ function getOrCreateSetupBucket(modeBucket, setupValue) {
   return modeBucket.setups[setupValue];
 }
 
+// Updates the overall and category stats within a given bucket by applying the provided delta. 
 function updateBucketStats(bucket, gameType, delta) {
   bucket.overall = accumulateStats(bucket.overall, delta);
   bucket.categories[gameType] = accumulateStats(bucket.categories[gameType], delta);
 }
 
+// Records a stats update for a specific mode, game type, and setup value by applying the provided delta to the relevant buckets in the stats store.
 function recordStatsDelta(modeKey, gameType, setupValue, delta) {
   const store = getStatsStore();
   const modeBucket = store.modes[modeKey] || createModeBucket();
@@ -228,6 +251,7 @@ function recordStatsDelta(modeKey, gameType, setupValue, delta) {
   return getModeStats(modeKey, { gameType, setupValue });
 }
 
+// Records the outcome of a freeplay round
 export function recordFreeplayRound({ modeKey, setupValue, isCorrect, hintsUsed, timeMs }) {
   const current = getModeStats(modeKey, { gameType: 'freeplay', setupValue });
   const nextStreak = isCorrect ? current.currentStreak + 1 : 0;
@@ -252,6 +276,7 @@ export function recordFreeplayRound({ modeKey, setupValue, isCorrect, hintsUsed,
   return recordStatsDelta(modeKey, 'freeplay', setupValue, delta);
 }
 
+// Records the outcome of a completed challenge run, including the number of rounds played, correct guesses, hints used, total time, and points scored.
 export function recordChallengeRun({
   modeKey,
   gameType,
@@ -288,12 +313,14 @@ export function recordChallengeRun({
   return recordStatsDelta(modeKey, gameType, setupValue, delta);
 }
 
+// Retrieves the stats for a specific bucket based on the provided game type. 
 function getBucketStats(bucket, gameType) {
   if (!bucket) return withComputedStats(getDefaultModeStats());
   if (!gameType || gameType === 'all') return withComputedStats(bucket.overall || getDefaultModeStats());
   return withComputedStats(bucket.categories?.[gameType] || getDefaultModeStats());
 }
 
+// Retrieves the stats for a given mode key, game type, and setup value. If modeKey is 'all', it aggregates stats across all modes.
 export function getModeStats(modeKey, { gameType = 'all', setupValue = 'all' } = {}) {
   const store = getStatsStore();
   const normalizedSetupValue = setupValue || 'all';
@@ -321,6 +348,8 @@ export function getModeStats(modeKey, { gameType = 'all', setupValue = 'all' } =
   return getBucketStats(selectedBucket, gameType);
 }
 
+// Retrieves a snapshot of the entire stats store with computed fields for all modes, game types, and setups. 
+// This is useful for displaying comprehensive stats in a UI without needing to compute them on the fly.
 export function getWtpStatsSnapshot() {
   const store = getStatsStore();
   return WTP_MODES.reduce((snapshot, mode) => {
@@ -344,7 +373,7 @@ export function getWtpStatsSnapshot() {
     return snapshot;
   }, {});
 }
-
+ // Retrieves the player's progress for the daily challenge, including whether they've completed it, their guess, and the timestamp of completion.
 export function getDailyProgress() {
   const progress = readJson(dailyKey(), {
     date: null,

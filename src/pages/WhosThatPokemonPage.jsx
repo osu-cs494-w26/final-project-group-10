@@ -1,3 +1,9 @@
+/*
+* WhosThatPokemonPage.jsx
+* React component that renders the main selection screen for the "Who's That Pokémon?" game mode. 
+* It displays available game modes, allows users to select a mode to play, and provides navigation options to view stats or return to the home page.
+*/
+
 import React from 'react';
 
 import GameModeCard from '../components/wtp/GameModeCard.jsx';

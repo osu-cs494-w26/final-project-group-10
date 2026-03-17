@@ -1,3 +1,8 @@
+/*
+WhosThatPokemonGamePage.jsx
+Main game page for "Who's That Pokémon?" mode, handling game setup, gameplay, and run summary.
+*/
+
 import React, { useMemo, useState } from 'react';
 
 import HintPanel from '../components/wtp/HintPanel.jsx';
@@ -5,6 +10,8 @@ import ModeSetupPanel from '../components/wtp/ModeSetupPanel.jsx';
 import ScorePanel from '../components/wtp/ScorePanel.jsx';
 import { getGameTypeByKey, WTP_MODE_MAP } from '../data/wtpModes.js';
 import { useWhosThatPokemonGame } from '../hooks/useWhosThatPokemonGame.js';
+
+// Helper functions for validating config, getting default config, button styles, reveal colors, and date shifting for daily override testing.
 
 function hasValidConfig(mode, config) {
   return !!config?.gameType && (!mode.setup || !!config?.setup?.value);
@@ -47,6 +54,7 @@ function shiftDateString(dateString, dayDelta) {
   return `${nextYear}-${nextMonth}-${nextDay}`;
 }
 
+// Modal shown at the end of a run, summarizing performance and offering next steps.
 function RunSummaryModal({ mode, gameType, summary, onTryAgain, onBackToModes, onChangeSetup }) {
   if (!summary) return null;
 
@@ -120,6 +128,7 @@ function RunSummaryModal({ mode, gameType, summary, onTryAgain, onBackToModes, o
   );
 }
 
+// Main game page component managing state for game setup, gameplay, and run summary display.
 export default function WhosThatPokemonGamePage({
   modeKey,
   initialConfig,
@@ -203,7 +212,8 @@ export default function WhosThatPokemonGamePage({
   const primaryActionLabel = gameType.roundLimit === null
     ? 'Play Again'
     : (session.runComplete ? 'Start New Run' : 'Next Pokemon');
-  const showDailyTestControls = mode.key === 'daily' && typeof window !== 'undefined' && window.location.hostname === 'localhost';
+  // localhost-only daily override controls available for future testing
+  const showDailyTestControls = false && mode.key === 'daily' && typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const showDailyRestrictionNotice = mode.key === 'daily' && (dailyLocked || roundState === 'resolved');
   const showRoundScore = gameType.roundLimit !== null && result?.metrics;
 

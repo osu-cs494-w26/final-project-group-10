@@ -1,3 +1,10 @@
+/*
+* WhosThatPokemonStatsPage.jsx
+* React component that renders the stats center page for the "Who's That Pokémon?" game mode. 
+* It displays aggregated statistics across all game modes and categories, as well as detailed breakdowns for each individual mode. 
+* Users can filter stats by game type and mode setup options to analyze their performance and progress in different areas of the game.
+*/
+
 import React, { useMemo, useState } from 'react';
 
 import {
@@ -37,6 +44,7 @@ function formatSeconds(value) {
   return `${value}s`;
 }
 
+// Component for rendering a dropdown select input to filter stats by game type or mode setup options, styled to match the overall design of the stats page.
 function FilterSelect({ label, value, onChange, options }) {
   return (
     <label style={{ display:'flex', flexDirection:'column', gap:'8px', minWidth:'180px', flex:'0 1 200px' }}>
@@ -66,6 +74,7 @@ function FilterSelect({ label, value, onChange, options }) {
   );
 }
 
+// Component for displaying an individual statistic card with a label and value, styled according to the overall theme of the stats page.
 function StatCard({ label, value, accent = 'var(--white)' }) {
   return (
     <div style={{ padding:'14px', border:'1px solid rgba(255,255,255,0.08)', background:'rgba(255,255,255,0.02)', display:'flex', flexDirection:'column', gap:'6px' }}>
@@ -79,6 +88,7 @@ function StatCard({ label, value, accent = 'var(--white)' }) {
   );
 }
 
+// Generates the list of stats to display based on the selected game type and mode.
 function StatsGrid({ stats, accent, gameTypeKey = 'all', freeplayStreak = null }) {
   const isFreeplayView = gameTypeKey === 'freeplay';
   const isChallengeView = gameTypeKey.startsWith('challenge-');
@@ -123,6 +133,8 @@ function StatsGrid({ stats, accent, gameTypeKey = 'all', freeplayStreak = null }
   );
 }
 
+// Component for rendering the stats panel for an individual game mode, including filters for game type and mode setup options, 
+// and a grid of relevant statistics based on the selected filters.
 function ModeStatsPanel({ mode, filters, onFiltersChange }) {
   const availableGameTypes = getAvailableGameTypes(mode);
   const setupOptions = mode.setup ? getModeSetupOptions(mode.setup) : [];
@@ -196,6 +208,7 @@ function ModeStatsPanel({ mode, filters, onFiltersChange }) {
   );
 }
 
+// Main component for rendering the stats page
 export default function WhosThatPokemonStatsPage({ onBack }) {
   const [filtersByScope, setFiltersByScope] = useState(createDefaultFilters);
 
