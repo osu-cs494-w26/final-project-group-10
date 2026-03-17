@@ -58,6 +58,8 @@ export async function fetchPokeData(name) {
     stats:        data.stats.map(s => ({ name: s.stat.name, value: s.base_stat })),
     moves:        data.moves.map(m => m.move.name.replace(/-/g, ' ')),
     abilities,
+    height:       data.height,   
+    weight:       data.weight
   };
   pokeCache[name] = entry;
   return entry;

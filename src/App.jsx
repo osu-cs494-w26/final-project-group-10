@@ -15,6 +15,7 @@ import SelectPage           from './pages/SelectPage.jsx';
 import SaveTeamPage         from './pages/SaveTeamPage.jsx';
 import BattleTrainerPage from './pages/BattleTrainerPage.jsx';
 import BattlePage           from './pages/BattlePage.jsx';
+import PokedexPage          from './pages/PokedexPage.jsx';
 import PokedexBackground    from './components/PokedexBackground.jsx';
 
 // Initialises auth, page routing, and battle state.
@@ -26,6 +27,8 @@ export default function App() {
   const [battleMode,   setBattleMode]   = useState('custom');
   // For legend battles: { playerTeam, opponentTeam, trainerLabel }
   const [trainerBattle, setTrainerBattle] = useState(null);
+
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
 
   if (loading) {
     return (
@@ -41,6 +44,17 @@ export default function App() {
 
   // Returns the correct page component for the current route.
 const renderPage = () => {
+    if (page === 'pokedex' || page.startsWith('pokedex/')) {
+      const pokemonName = page.startsWith('pokedex/') ? page.split('/')[1] : selectedPokemon;
+      return (
+        <PokedexPage
+          selectedPokemon={pokemonName}
+          setSelectedPokemon={setSelectedPokemon}
+          setPage={setPage}
+        />
+      );
+    }
+
     switch (page) {
       case 'home':
         return <HomePage setPage={setPage} />;
@@ -69,6 +83,8 @@ const renderPage = () => {
         ) : <BattleTrainerPage setPage={setPage} user={user} setBattleTeams={setTrainerBattle} />;
       case 'battle':
         return <BattlePage team={battleMode === 'random' ? [] : team} setPage={setPage} />;
+      case 'pokedex':
+        return <PokedexPage selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} setPage={setPage} />;
       default:
         return <HomePage setPage={setPage} />;
     }
@@ -78,7 +94,7 @@ const renderPage = () => {
 const showBackground = page === 'home' || page === 'battlemode' || page === 'battletrainer';
 
   return (
-    <div key={page} style={{ animation: 'fadeIn 0.3s ease', position: 'relative', zIndex: 1 }}>
+    <div key={page.startsWith('pokedex') ? 'pokedex' : page} style={{ animation: 'fadeIn 0.3s ease', position: 'relative', zIndex: 1 }}>
       {showBackground && <PokedexBackground />}
       <NavBar page={page} setPage={setPage} user={user} onSignOut={signOut} onQuickBattle={() => { setBattleMode('random'); setPage('battle'); }} />
       {renderPage()}
