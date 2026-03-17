@@ -109,6 +109,37 @@ export function findMatchingNature(natures, preferredStat, leastStat) {
   // Last resort
   return natures[0];
 }
+/**
+ * Generate three team variants (balanced, offensive, defensive) for a given nature.
+ */
+export async function generateTeamVariants(nature, allPokemonList) {
+  console.log(`Generating team variants for nature: ${nature.name}`);
+
+  // Balanced team (original scoring)
+  const balancedTeam = await selectTeamForNature(nature, allPokemonList);
+
+  // Offensive variant: boost attacking stats, penalize defense
+  const offensiveNature = {
+    ...nature,
+    increased_stat: nature.increased_stat, // keep same increased
+    decreased_stat: { name: nature.increased_stat?.name === 'attack' ? 'defense' : 'special-defense' } // decrease defensive counterpart
+  };
+  const offensiveTeam = await selectTeamForNature(offensiveNature, allPokemonList);
+
+  // Defensive variant: boost defensive stats, penalize offense
+  const defensiveNature = {
+    ...nature,
+    increased_stat: { name: nature.increased_stat?.name === 'attack' ? 'defense' : 'special-defense' },
+    decreased_stat: nature.increased_stat // decrease the original increased stat
+  };
+  const defensiveTeam = await selectTeamForNature(defensiveNature, allPokemonList);
+
+  return {
+    balanced: balancedTeam,
+    offensive: offensiveTeam,
+    defensive: defensiveTeam,
+  };
+}
 
 /**
  * Compute preferred and least preferred stat from accumulated scores.
