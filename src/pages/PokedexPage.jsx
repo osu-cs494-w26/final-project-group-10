@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { GEN1_POKEMON, GEN2_POKEMON, GEN3_POKEMON, GEN4_POKEMON, GEN5_POKEMON, TYPE_COLORS, TYPE_BG } from '../utils/constants.js';
 import { usePokemonData } from "../hooks/usePokemonData";
 import PokedexCard from "../components/PokedexCard.jsx";
@@ -71,6 +71,13 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
         }
     };
 
+    const overlayRef = useRef(null);
+
+    useEffect(() => {
+        if (overlayRef.current) overlayRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [selectedPokemon]);
+    
+
     return (
         <div 
             onScroll={handleScroll}
@@ -86,7 +93,6 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
                 background: 'var(--black)', 
                 padding: '24px 16px', 
                 borderBottom: '1px solid var(--grey-800)',
-                bottomMargin: '100px'
             }}>
                 <div style={{ 
                     display: 'flex', 
@@ -196,6 +202,7 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
 
             <div 
                 style={{
+                    
                     filter: selectedPokemon ? 'brightness(0.3) blur(2px)' : 'none',
                     transition: 'all 0.3s ease',
                     pointerEvents: selectedPokemon ? 'none' : 'auto',
@@ -239,6 +246,7 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
                         setSelectedPokemon(null)
                         setPage('pokedex')
                     }}
+                    ref={overlayRef}
                     style={{
                         position: 'fixed', top: 0, left: 0, right:0, bottom: 0,
                         backgroundColor: 'rgba(0,0,0,0.7)', 
@@ -258,7 +266,12 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
                             setSelectedPokemon={setSelectedPokemon}
                         />
                         <div onClick={(e) => e.stopPropagation()}>
-                            <PokedexInfo pokemon={pokeData[selectedPokemon]} />
+                            <PokedexInfo 
+                                pokemon={pokeData[selectedPokemon]} 
+                                setSelectedPokemon={setSelectedPokemon} 
+                                prefetchFull={prefetchFull}
+                                setPage={setPage}
+                            />
                         </div>
                     </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {TYPE_SPRITE_IDS, TYPE_BG, TYPE_COLORS} from '../utils/constants.js';
 
 export default function PokedexCard({name, data, setSelectedPokemon, setPage}) {

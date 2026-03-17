@@ -1,11 +1,65 @@
 import { TYPE_BG, TYPE_COLORS } from '../utils/constants.js';
-import { useState } from 'react';
+import { fetchPokeData } from '../hooks/usePokemonData.js';
+import { useState, useEffect, Fragment} from 'react';
 
-export default function PokedexInfo({ pokemon }) {
+const evoCache = {};
+
+function flattenChain(node, result = []) {
+    result.push(node.species.name);
+    node.evolves_to.forEach(next => flattenChain(next, result));
+    return result;
+}
+
+function useEvolutionChain(pokemonName) {
+    const [chain, setChain] = useState(null); 
+ 
+    useEffect(() => {
+        if (!pokemonName) return;
+        let cancelled = false;
+ 
+        async function load() {
+            const baseName = pokemonName
+                .replace(/-incarnate$/, '').replace(/-aria$/, '')
+                .replace(/-ordinary$/, '').replace(/-male$/, '')
+                .replace(/-standard$/, '').replace(/-red-striped$/, '')
+                .replace(/-altered$/, '').replace(/-plant$/, '')
+                .replace(/-normal$/, '').replace(/-land$/, '');
+ 
+            if (evoCache[baseName]) {
+                setChain(evoCache[baseName]);
+                return;
+            }
+ 
+            try {
+                const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${baseName}`);
+                const speciesData = await speciesRes.json();
+                const chainUrl = speciesData.evolution_chain?.url;
+                if (!chainUrl) return;
+ 
+                const chainRes = await fetch(chainUrl);
+                const chainData = await chainRes.json();
+                const names = flattenChain(chainData.chain);
+ 
+                const members = await Promise.all(names.map(n => fetchPokeData(n)));
+                const result = members.map(m => ({ name: m.name, sprite: m.sprite, id: m.id }));
+ 
+                evoCache[baseName] = result;
+                if (!cancelled) setChain(result);
+            } catch (e) {
+                console.error('Evolution chain fetch failed', e);
+            }
+        }
+        load();
+        return () => { cancelled = true; };
+    }, [pokemonName]);
+ 
+    return chain;
+}
+
+export default function PokedexInfo({ pokemon, setSelectedPokemon, setPage }) {
     if (!pokemon) return null;
 
     const [userHeight, setUserHeight] = useState(173);
-    if (!pokemon) return null;
 
     const pokemonHeightM = pokemon.height / 10;
     const userHeightM = userHeight ? userHeight / 100 : null;
@@ -22,6 +76,7 @@ export default function PokedexInfo({ pokemon }) {
     };
 
     const shiftValue = getGroundingShift(pokemonHeightM);
+    const evoChain = useEvolutionChain(pokemon.name);
 
     return (
         <div style={{
@@ -140,7 +195,82 @@ export default function PokedexInfo({ pokemon }) {
                 ))}
             </div>
             
-            
+            {/* Evolution chain */}
+            <div style={{
+                background: 'var(--grey-800)',
+                border: '3px solid black',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '6px 6px 0 black',
+            }}>
+                <h3 style={{
+                    color: '#cc2233',
+                    fontFamily: 'monospace',
+                    margin: '0 0 16px',
+                    fontSize: '14px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                }}>
+                    Evolution Chain
+                </h3>
+ 
+                {!evoChain ? (
+                    <p style={{ color: 'white', fontFamily: 'monospace', fontSize: '11px', margin: 0 }}>Loading...</p>
+                ) : evoChain.length === 1 ? (
+                    <p style={{ color: 'white', fontFamily: 'monospace', fontSize: '11px', margin: 0 }}>This Pokémon does not evolve.</p>
+                ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', justifyContent: 'center'}}>
+                        {evoChain.map((member, i) => (
+                            <Fragment key={member.name}>
+                                <div
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedPokemon(member.name)
+                                        setPage(`pokedex/${member.name}`)
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        padding: '8px',
+                                        borderRadius: '8px',
+                                        border: member.name === pokemon.name ? `2px solid ${TYPE_COLORS[pokemon.types[0]]}`: '1px solid var(--grey-500)',
+                                        background: member.name === pokemon.name ? TYPE_BG[pokemon.types[0]] : 'transparent',
+                                        transition: 'background 0.2s',
+                                    }}
+                                    onMouseEnter={e => {
+                                        if (member.name !== pokemon.name) e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                    }}
+                                    onMouseLeave={e => {
+                                        if (member.name !== pokemon.name) e.currentTarget.style.background = 'transparent';
+                                    }}
+                                >
+                                    <img
+                                        src={member.sprite}
+                                        alt={member.name}
+                                        style={{ width: '72px', height: '72px', objectFit: 'contain', imageRendering: 'pixelated' }}
+                                    />
+                                    <span style={{
+                                        fontSize: '10px',
+                                        color: 'white',
+                                        fontFamily: 'monospace',
+                                        textTransform: 'capitalize',
+                                        marginTop: '4px',
+                                    }}>
+                                        {member.name}
+                                    </span>
+                                    <span style={{ fontSize: '9px', color: 'var(--grey-300)', fontFamily: 'monospace' }}>
+                                        #{String(member.id).padStart(3, '0')}
+                                    </span>
+                                </div>
+                                {(i < evoChain.length -1) && <p key={member.name+i}> → </p>}
+                            </Fragment>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             {/* Height check part */}
             <div style={{
                 background: 'var(--grey-800)',
@@ -205,7 +335,7 @@ export default function PokedexInfo({ pokemon }) {
 
                 {/* Input height*/}
                 <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: '#888', fontSize: '11px', fontFamily: 'monospace' }}>YOUR HT (CM):</span>
+                    <span style={{ color: 'white', fontSize: '11px', fontFamily: 'monospace' }}>ENTER HT (CM):</span>
                     <input 
                         type="number" 
                         value={userHeight} 
@@ -217,7 +347,14 @@ export default function PokedexInfo({ pokemon }) {
                                 setUserHeight(val);
                             }
                         }}
-                        style={{ background: '#333', border: '1px solid #444', color: 'white', width: '60px', fontSize: '11px', padding: '2px 4px' }}
+                        style={{ 
+                            border: '2px solid var(--grey-500)',
+                            background: 'var(--grey-800)', 
+                            color: 'white', 
+                            width: '60px', 
+                            fontSize: '11px', 
+                            padding: '2px 4px' 
+                        }}
                     />
                 </div>
             </div>

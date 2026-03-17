@@ -138,7 +138,7 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
                             borderRadius: '6px',
                             padding: '0 10px',
                             cursor: playing ? 'default' : 'pointer',
-                            color: '#ffffff',
+                            color: 'white',
                             fontSize: '14px',
                             flexShrink: 0,
                             transition: 'all 0.2s ease',
@@ -203,7 +203,7 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
                         flex: 1,
                         textAlign: 'center',
                     }}>
-                        <span style={{ color: '#ffffff', fontSize: '12px', textTransform: 'capitalize' }}>
+                        <span style={{ color: '#ffffff', fontSize: '14px', textTransform: 'capitalize' }}>
                             {category}
                         </span>
                     </div>
@@ -215,7 +215,7 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
                         border: '2px solid black',
                         textAlign: 'center',
                     }}>
-                        <span style={{ color: '#ffffff', fontSize: '12px' }}>
+                        <span style={{ color: '#ffffff', fontSize:'14px' }}>
                             #{String(selectedPokemon?.id ?? '').padStart(3, '0')}
                         </span>
                     </div>
