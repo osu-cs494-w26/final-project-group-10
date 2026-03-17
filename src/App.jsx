@@ -3,7 +3,7 @@
  * battle team state, and renders the NavBar + active page.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import './styles/global.css';
 
 import { useAuth }          from './hooks/useAuth.js';
@@ -17,6 +17,18 @@ import BattleTrainerPage from './pages/BattleTrainerPage.jsx';
 import BattlePage           from './pages/BattlePage.jsx';
 import PokedexPage          from './pages/PokedexPage.jsx';
 import PokedexBackground    from './components/PokedexBackground.jsx';
+// Import new quiz pages
+import PersonalityQuizPage from './pages/PersonalityQuizPage.jsx';
+import PersonalityResultPage from './pages/PersonalityResultPage.jsx';
+import QuizPage from './pages/QuizPage.jsx';
+import PokemonQuizPage from './pages/PokemonQuizPage.jsx';
+import EvolutionQuizPage from './pages/EvolutionQuizPage.jsx';
+import PokemonQuizResultPage from './pages/PokemonQuizResultPage.jsx';
+import EvolutionQuizResultPage from './pages/EvolutionQuizResultPage.jsx';
+// import new WTP pages
+import WhosThatPokemonPage from './pages/WhosThatPokemonPage.jsx';
+import WhosThatPokemonGamePage from './pages/WhosThatPokemonGamePage.jsx';
+import WhosThatPokemonStatsPage from './pages/WhosThatPokemonStatsPage.jsx';
 
 // Initialises auth, page routing, and battle state.
 export default function App() {
@@ -25,8 +37,35 @@ export default function App() {
   const [page,         setPage]         = useState('home');
   const [team,         setTeam]         = useState([]);
   const [battleMode,   setBattleMode]   = useState('custom');
-  // For legend battles: { playerTeam, opponentTeam, trainerLabel }
   const [trainerBattle, setTrainerBattle] = useState(null);
+  const [quizResult,   setQuizResult]   = useState(null); 
+  const [pokemonQuizResult, setPokemonQuizResult] = useState(null);
+  const [evolutionQuizResult, setEvolutionQuizResult] = useState(null);
+  const [wtpSession, setWtpSession] = useState({ modeKey: null, config: null });
+  const [wtpPokedexTarget, setWtpPokedexTarget] = useState(null);
+  const skipNextScrollResetRef = React.useRef(false);
+
+  useEffect(() => {
+    if (wtpPokedexTarget) {
+      console.info('Pending Pokédex handoff from WTP:', wtpPokedexTarget);
+    }
+  }, [wtpPokedexTarget]);
+
+  useLayoutEffect(() => {
+    if (skipNextScrollResetRef.current) {
+      skipNextScrollResetRef.current = false;
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [page]);
+
+  const setPagePreserveScroll = (nextPage) => {
+    skipNextScrollResetRef.current = true;
+    setPage(nextPage);
+  };
+
+
 
   const [selectedPokemon, setSelectedPokemon] = useState(null);
 
@@ -42,7 +81,6 @@ export default function App() {
     return <AuthPage signIn={signIn} signUp={signUp} resetPassword={resetPassword} updatePassword={updatePassword} resetMode={resetMode} />;
   }
 
-  // Returns the correct page component for the current route.
 const renderPage = () => {
     if (page === 'pokedex' || page.startsWith('pokedex/')) {
       const pokemonName = page.startsWith('pokedex/') ? page.split('/')[1] : selectedPokemon;
@@ -63,7 +101,7 @@ const renderPage = () => {
       case 'select':
         return <SelectPage setPage={setPage} team={team} setTeam={setTeam} />;
       case 'saveteam':
-        return <SaveTeamPage setPage={setPage} user={user} />;
+        return <SaveTeamPage setPage={setPage} user={user} initialTeam={team}  />;
       case 'battletrainer':
         return (
           <BattleTrainerPage
@@ -83,6 +121,70 @@ const renderPage = () => {
         ) : <BattleTrainerPage setPage={setPage} user={user} setBattleTeams={setTrainerBattle} />;
       case 'battle':
         return <BattlePage team={battleMode === 'random' ? [] : team} setPage={setPage} />;
+      case 'personality-quiz':
+        return <PersonalityQuizPage setPage={setPage} setQuizResult={setQuizResult} />;
+      case 'personality-result':
+          return (
+            <PersonalityResultPage
+              result={quizResult}
+              setPage={setPage}
+              clearQuizResult={() => setQuizResult(null)}
+              onSaveTeam={(teamToSave) => {
+                setTeam(teamToSave);      // Set the team in App state
+                setPage('saveteam');       // Navigate to SaveTeamPage
+              }}
+            />
+          );
+      case 'quiz':
+        return <QuizPage setPage={setPage} />;
+      case 'wtp':
+      return (
+        <WhosThatPokemonPage
+          setPage={setPage}
+          onViewStats={() => setPage('wtp-stats')}
+          onSelectMode={(modeKey) => {
+            setWtpSession({ modeKey, config: null });
+            setPage('wtp-game');
+          }}
+        />
+      );
+    case 'wtp-stats':
+      return (
+        <WhosThatPokemonStatsPage
+          onBack={() => setPage('wtp')}
+          onOpenModes={() => setPage('wtp')}
+        />
+      );
+    case 'wtp-game':
+      return (
+        <WhosThatPokemonGamePage
+          key={`${wtpSession.modeKey || 'mode'}:${wtpSession.config?.gameType || 'game'}:${wtpSession.config?.setup?.value || 'pool'}`}
+          modeKey={wtpSession.modeKey}
+          initialConfig={wtpSession.config}
+          onBackToModes={(options) => {
+            if (options?.preserveScroll) {
+              setPagePreserveScroll('wtp');
+              return;
+            }
+
+            setPage('wtp');
+          }}
+          onViewStats={() => setPage('wtp-stats')}
+          onUpdateSession={(modeKey, config) => setWtpSession({ modeKey, config })}
+          onViewPokedex={(pokemonName) => {
+            // TODO: replace this state handoff with the project Pokédex detail page once it is available.
+            setWtpPokedexTarget(pokemonName);
+          }}
+        />
+      );
+    case 'pokemon-quiz':
+      return <PokemonQuizPage setPage={setPage} setPokemonQuizResult={setPokemonQuizResult} />;
+    case 'evolution-quiz':
+      return <EvolutionQuizPage setPage={setPage} setEvolutionQuizResult={setEvolutionQuizResult} />;
+    case 'pokemon-quiz-result':
+      return <PokemonQuizResultPage result={pokemonQuizResult} setPage={setPage} clearResult={() => setPokemonQuizResult(null)} />;
+    case 'evolution-quiz-result':
+      return <EvolutionQuizResultPage result={evolutionQuizResult} setPage={setPage} clearResult={() => setEvolutionQuizResult(null)} />;
       case 'pokedex':
         return <PokedexPage selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} setPage={setPage} />;
       default:
@@ -91,10 +193,11 @@ const renderPage = () => {
   }; 
 
   // Only show the scrolling Pokédex grid on home and battle pages.
-const showBackground = page === 'home' || page === 'battlemode' || page === 'battletrainer';
+  const showBackground = page === 'home' || page === 'battlemode' || page === 'battletrainer';
+  const pageAnimation = page === 'wtp' || page === 'wtp-game' || page === 'wtp-stats' ? 'fadeInFast 0.2s ease' : 'fadeIn 0.3s ease';
 
   return (
-    <div key={page.startsWith('pokedex') ? 'pokedex' : page} style={{ animation: 'fadeIn 0.3s ease', position: 'relative', zIndex: 1 }}>
+    <div key={page.startsWith('pokedex') ? 'pokedex' : page} style={{ animation: pageAnimation, position: 'relative', zIndex: 1 }}>
       {showBackground && <PokedexBackground />}
       <NavBar page={page} setPage={setPage} user={user} onSignOut={signOut} onQuickBattle={() => { setBattleMode('random'); setPage('battle'); }} />
       {renderPage()}

@@ -10,8 +10,8 @@ const PIKACHU_ART = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sp
 const CARDS = [
   { key:'pokedex',     num:'01', title:'Pokédex',            subtitle:'Pokémon Database',  desc:'Browse all Pokémon',                             accent:'#e06030', bg:'#7a2a10' },
   { key:'battlemode',  num:'02', title:'Battle',             subtitle:'Pokémon Battles',   desc:'Compete in Pokémon Battles',                     accent:'#4090d0', bg:'#1a3a6a' },
-  { key:'quiz',        num:'03', title:"Who's That Pokémon?",subtitle:'Daily Challenge',    desc:'Guess the Pokémon',                              accent:'#60c060', bg:'#1a3a1a' },
-  { key:'personality', num:'04', title:'Personality Quiz',   subtitle:'Find Your Match',   desc:'Find a Pokémon that matches your personality.',  accent:'#c8b820', bg:'#3a2c08' },
+  { key:'wtp',        num:'03', title:"Who's That Pokémon?",subtitle:'Guessing Game',    desc:'Guess the unique Pokémon across 9 different modes.',                              accent:'#60c060', bg:'#1a3a1a' },
+  { key:'quiz', num:'04', title:'Quizzes',   subtitle:'Test Your Knowledge & Find Your Match',   desc:'How much do you know about Pokemon? Find your team now!',  accent:'#c8b820', bg:'#3a2c08' },
 ];
 
 // Single mode card with hover accent colour and "Select →" reveal.

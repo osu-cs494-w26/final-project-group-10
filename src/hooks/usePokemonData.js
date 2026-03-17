@@ -1,6 +1,7 @@
 /*
  * usePokemonData.js Module-level cache and React hook for Pokémon and move data.
  * fetchPokeData / fetchMoveData hit PokeAPI once then serve from cache forever.
+ * Now uses animated sprites from Generation V as the primary sprite.
  */
 
 import { useState, useCallback, useRef } from 'react';
@@ -19,7 +20,7 @@ export async function fetchPokeData(name) {
   if (name.startsWith('testmon')) {
     const entry = {
       id: 0, name,
-      sprite:     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png',
+      sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png', // static fallback
       spriteBack: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/132.png',
       types: ['normal'], abilities: [],
       stats: [
@@ -35,6 +36,13 @@ export async function fetchPokeData(name) {
 
   const res  = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
   const data = await res.json();
+
+  // Try to get animated sprite first, fall back to static if not available
+  const animatedSprite = data.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default;
+  const staticSprite = data.sprites.front_default;
+  
+  // Use animated as primary, static as fallback
+  const primarySprite = animatedSprite || staticSprite;
 
   // Fetch abilities in parallel
   const abilities = await Promise.all(data.abilities.map(async a => {
@@ -52,12 +60,15 @@ export async function fetchPokeData(name) {
   const entry = {
     id:           data.id,
     name:         data.name,
-    sprite:     data.sprites.front_default,
-    spriteBack: data.sprites.back_default,
+    sprite:       primarySprite, // This will be animated if available
+    spriteBack:   data.sprites.back_default,
     types:        data.types.map(t => t.type.name),
     stats:        data.stats.map(s => ({ name: s.stat.name, value: s.base_stat })),
     moves:        data.moves.map(m => m.move.name.replace(/-/g, ' ')),
     abilities,
+    // Keep these for reference if needed
+    animatedSprite,
+    staticSprite,
     height:       data.height,   
     weight:       data.weight
   };
@@ -124,7 +135,7 @@ export function usePokemonData() {
     loading.current.add(name);
     try {
       const data = await fetchPokeData(name);
-      setSprites(p  => ({ ...p, [name]: data.sprite }));
+      setSprites(p  => ({ ...p, [name]: data.sprite })); // This will be animated
       setPokeData(p => ({ ...p, [name]: data }));
     } catch(e) { console.error('Failed fetchBasic', name, e); }
     loading.current.delete(name);

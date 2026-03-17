@@ -36,7 +36,6 @@ async function bulkLoadAll(names, onProgress) {
 const ALL_POKEMON = ['testmon', ...GEN1_POKEMON, ...GEN2_POKEMON, ...GEN3_POKEMON, ...GEN4_POKEMON, ...GEN5_POKEMON];
 const ALL_TYPES   = ['normal','fire','water','grass','electric','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
 
-
 function makeTestMon() {
   return {
     name: 'testmon', id: 0, moves: ALL_MOVES.slice(0, 4), item: null, ability: null, friendship: 255, gender: 'm',
@@ -210,8 +209,8 @@ function PokemonCard({ name, pokeData, teamFull, isDragging, isSelected, onDragS
 }
 
 // Main builder: Pokémon grid on the left, party slots on the right.
-export default function SaveTeamPage({ setPage, user }) {
-  const [team,            setTeam]            = useState([]);
+export default function SaveTeamPage({ setPage, user, initialTeam }) {
+  const [team,            setTeam]            = useState(initialTeam || []); // Initialize with passed team
   const [search,          setSearch]          = useState('');
   const [filterType,      setFilterType]      = useState('all');
   const [customizeTarget, setCustomizeTarget] = useState(null);
@@ -254,9 +253,18 @@ export default function SaveTeamPage({ setPage, user }) {
     bulkLoadAll(ALL_POKEMON, p => setLoadProgress(p)).then(() => { batchRegisterAll(ALL_POKEMON); setAllLoaded(true); });
   }, []);
 
+  // Fetch missing cachedData for team members
   useEffect(() => {
     team.forEach(p => { if (!p.cachedData && !pokeData[p.name]) fetchBasic(p.name); });
   }, [team]);
+
+  // ===== FIX: Automatically populate team from initialTeam =====
+  // This ensures that when we arrive from the quiz, the team is already in the party slots
+  useEffect(() => {
+    if (initialTeam && initialTeam.length > 0) {
+      setTeam(initialTeam);
+    }
+  }, [initialTeam]);
 
   const filtered = ALL_POKEMON.filter(n => {
     if (teamNames.has(n)) return false;
