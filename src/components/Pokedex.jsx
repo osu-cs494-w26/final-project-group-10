@@ -98,7 +98,7 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#cc2233', border: '1px solid black' }}/>
                     </div>
                     <div style={{
-                        background: 'var(--grey-800)',
+                        background: 'rgb(56, 127, 114)',
                         borderRadius: '4px',
                         height: '150px',
                         display: 'flex',

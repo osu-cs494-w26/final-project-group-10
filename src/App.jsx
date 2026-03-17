@@ -88,7 +88,7 @@ const renderPage = () => {
       default:
         return <HomePage setPage={setPage} />;
     }
-  };
+  }; 
 
   // Only show the scrolling Pokédex grid on home and battle pages.
 const showBackground = page === 'home' || page === 'battlemode' || page === 'battletrainer';

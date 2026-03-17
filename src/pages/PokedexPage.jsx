@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { GEN1_POKEMON, GEN2_POKEMON, GEN3_POKEMON, GEN4_POKEMON, GEN5_POKEMON } from '../utils/constants.js';
+import { GEN1_POKEMON, GEN2_POKEMON, GEN3_POKEMON, GEN4_POKEMON, GEN5_POKEMON, TYPE_COLORS, TYPE_BG } from '../utils/constants.js';
 import { usePokemonData } from "../hooks/usePokemonData";
 import PokedexCard from "../components/PokedexCard.jsx";
 import Pokedex from "../components/Pokedex.jsx";
@@ -37,6 +37,7 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
     const [sortBy, setSortBy] = useState('lowest');
+    const [isFocused, setIsFocused] = useState(false);
 
     useEffect(() => {
         if (selectedPokemon) prefetchFull(selectedPokemon);
@@ -114,6 +115,7 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
                     <div style={{ width: '85px' }} /> 
                 </div>
             </div>
+            
             {/* Filter Bar */}
             <div style={{
                 display: 'flex',
@@ -128,15 +130,18 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search Pokémon..."
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     style={{
                         flex: '1 1 200px',
                         padding: '8px 12px',
-                        border: '1px solid var(--grey-700)',
-                        background: 'var(--grey-900)',
+                        border: '1px solid var(--grey-500)',
+                        background: 'var(--grey-800)',
+                        fontFamily: 'inherit', 
                         color: 'white',
                         fontSize: '14px',
                         outline: 'none',
-                        fontFamily: 'inherit'
+                        borderColor: isFocused ? 'var(--grey-300)' : 'var(--grey-500)'
                     }}
                 />
 
@@ -146,17 +151,22 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
                     onChange={e => setTypeFilter(e.target.value)}
                     style={{
                         padding: '8px 12px',
-                        border: '1px solid var(--grey-700)',
-                        background: 'var(--grey-900)',
+                        border: '1px solid',
+                        borderColor: typeFilter ? TYPE_COLORS[typeFilter] : 'var(--grey-500)',
+                        background: typeFilter ? TYPE_BG [typeFilter] :'var(--grey-800)',
                         color: 'white',
                         fontSize: '14px',
                         cursor: 'pointer',
-                        fontFamily: 'inherit'
+                        fontFamily: 'inherit',
+                        outline: 'none',
                     }}
                 >
                     <option value="">All Types</option>
                     {ALL_TYPES.map(type => (
-                        <option key={type} value={type} style={{ textTransform: 'capitalize' }}>
+                        <option 
+                            key={type} 
+                            value={type} 
+                            style={{ textTransform: 'capitalize'}}>
                             {type.charAt(0).toUpperCase() + type.slice(1)}
                         </option>
                     ))}
@@ -168,12 +178,13 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
                     onChange={e => setSortBy(e.target.value)}
                     style={{
                         padding: '8px 12px',
-                        border: '1px solid var(--grey-700)',
-                        background: 'var(--grey-900)',
+                        border: '1px solid var(--grey-500)',
+                        background: 'var(--grey-800)',
                         color: 'white',
                         fontSize: '14px',
                         cursor: 'pointer',
-                        fontFamily: 'inherit'
+                        fontFamily: 'inherit',
+                        outline: 'none'
                     }}
                 >
                     <option value="lowest">Lowest #</option>
