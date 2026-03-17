@@ -37,7 +37,7 @@ export default function PokedexCard({name, data, setSelectedPokemon, setPage}) {
             </span>
             <img 
                 src={data.sprite} 
-                style={{ width: '100px', height: '100px', objectFit: 'contain'}}
+                style={{ width: '100px', height: '100px', objectFit: 'contain', imageRendering: 'pixelated'}}
             />
             <div>
                 {data.types.map(type => {

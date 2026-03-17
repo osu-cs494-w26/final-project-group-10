@@ -69,13 +69,6 @@ export default function PokedexInfo({ pokemon, setSelectedPokemon, setPage }) {
     const pokemonPx = Math.round((pokemonHeightM / maxHeight) * CONTAINER_HEIGHT);
     const userPx = userHeightM ? Math.round((userHeightM / maxHeight) * CONTAINER_HEIGHT) : null;
 
-    const getGroundingShift = (height) => {
-        if (height < 0.8) return '15%';
-        if (height <= 2.0) return '6%'; 
-        return '2%';                    
-    };
-
-    const shiftValue = getGroundingShift(pokemonHeightM);
     const evoChain = useEvolutionChain(pokemon.name);
 
     return (
@@ -309,7 +302,6 @@ export default function PokedexInfo({ pokemon, setSelectedPokemon, setPage }) {
                                 height: `${pokemonPx}px`, 
                                 filter: 'brightness(0)', 
                                 imageRendering: 'pixelated',
-                                transform: `translateY(${shiftValue})`,
                             }} 
                         />
                         <div style={{ color: 'black', fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace', marginTop: '4px' }}>
