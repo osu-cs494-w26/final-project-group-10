@@ -47,6 +47,7 @@ function useEvolutionChain(pokemonName) {
                 if (!cancelled) setChain(result);
             } catch (e) {
                 console.error('Evolution chain fetch failed', e);
+                if (!cancelled) setChain([]);
             }
         }
         load();
@@ -59,7 +60,7 @@ function useEvolutionChain(pokemonName) {
 export default function PokedexInfo({ pokemon, setSelectedPokemon, setPage }) {
     if (!pokemon) return null;
 
-    const [userHeight, setUserHeight] = useState(173);
+    const [userHeight, setUserHeight] = useState(140);
 
     const pokemonHeightM = pokemon.height / 10;
     const userHeightM = userHeight ? userHeight / 100 : null;
@@ -209,7 +210,7 @@ export default function PokedexInfo({ pokemon, setSelectedPokemon, setPage }) {
  
                 {!evoChain ? (
                     <p style={{ color: 'white', fontFamily: 'monospace', fontSize: '11px', margin: 0 }}>Loading...</p>
-                ) : evoChain.length === 1 ? (
+                ) : (evoChain.length === 0 || evoChain.length === 1) ? (
                     <p style={{ color: 'white', fontFamily: 'monospace', fontSize: '11px', margin: 0 }}>This Pokémon does not evolve.</p>
                 ) : (
                     <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', justifyContent: 'center'}}>

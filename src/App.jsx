@@ -83,6 +83,70 @@ const renderPage = () => {
         ) : <BattleTrainerPage setPage={setPage} user={user} setBattleTeams={setTrainerBattle} />;
       case 'battle':
         return <BattlePage team={battleMode === 'random' ? [] : team} setPage={setPage} />;
+      case 'personality-quiz':
+        return <PersonalityQuizPage setPage={setPage} setQuizResult={setQuizResult} />;
+      case 'personality-result':
+          return (
+            <PersonalityResultPage
+              result={quizResult}
+              setPage={setPage}
+              clearQuizResult={() => setQuizResult(null)}
+              onSaveTeam={(teamToSave) => {
+                setTeam(teamToSave);      // Set the team in App state
+                setPage('saveteam');       // Navigate to SaveTeamPage
+              }}
+            />
+          );
+      case 'quiz':
+        return <QuizPage setPage={setPage} />;
+      case 'wtp':
+      return (
+        <WhosThatPokemonPage
+          setPage={setPage}
+          onViewStats={() => setPage('wtp-stats')}
+          onSelectMode={(modeKey) => {
+            setWtpSession({ modeKey, config: null });
+            setPage('wtp-game');
+          }}
+        />
+      );
+    case 'wtp-stats':
+      return (
+        <WhosThatPokemonStatsPage
+          onBack={() => setPage('wtp')}
+          onOpenModes={() => setPage('wtp')}
+        />
+      );
+    case 'wtp-game':
+      return (
+        <WhosThatPokemonGamePage
+          key={`${wtpSession.modeKey || 'mode'}:${wtpSession.config?.gameType || 'game'}:${wtpSession.config?.setup?.value || 'pool'}`}
+          modeKey={wtpSession.modeKey}
+          initialConfig={wtpSession.config}
+          onBackToModes={(options) => {
+            if (options?.preserveScroll) {
+              setPagePreserveScroll('wtp');
+              return;
+            }
+
+            setPage('wtp');
+          }}
+          onViewStats={() => setPage('wtp-stats')}
+          onUpdateSession={(modeKey, config) => setWtpSession({ modeKey, config })}
+          onViewPokedex={(pokemonName) => {
+            setSelectedPokemon(pokemonName)
+            setPage(`pokedex/${pokemonName}`)
+          }}
+        />
+      );
+    case 'pokemon-quiz':
+      return <PokemonQuizPage setPage={setPage} setPokemonQuizResult={setPokemonQuizResult} />;
+    case 'evolution-quiz':
+      return <EvolutionQuizPage setPage={setPage} setEvolutionQuizResult={setEvolutionQuizResult} />;
+    case 'pokemon-quiz-result':
+      return <PokemonQuizResultPage result={pokemonQuizResult} setPage={setPage} clearResult={() => setPokemonQuizResult(null)} />;
+    case 'evolution-quiz-result':
+      return <EvolutionQuizResultPage result={evolutionQuizResult} setPage={setPage} clearResult={() => setEvolutionQuizResult(null)} />;
       case 'pokedex':
         return <PokedexPage selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} setPage={setPage} />;
       default:
