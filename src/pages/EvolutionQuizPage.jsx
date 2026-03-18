@@ -1,12 +1,11 @@
 /**
  * EvolutionQuizPage.jsx
- * 10 question Pokémon evolution quiz.
+ * 10-question Pokémon evolution quiz. Responsive.
  */
 
 import React, { useState, useEffect } from 'react';
 import { evolutionQuizBank } from '../data/evolutionQuizQuestions';
 
-// Use same styles as PokemonQuizPage
 const S = {
   wrap: {
     position: 'relative', zIndex: 1,
@@ -50,10 +49,7 @@ const S = {
     cursor: 'pointer',
     textAlign: 'left',
     transition: 'all 0.15s',
-    '&:hover': {
-      background: 'var(--grey-700)',
-      borderColor: 'var(--grey-400)',
-    },
+    
   },
   selected: {
     background: 'var(--grey-700)',
@@ -102,16 +98,10 @@ export default function EvolutionQuizPage({ setPage, setEvolutionQuizResult }) {
 
   const handleNext = () => {
     if (selectedOption === null) return;
-
     const currentQ = questions[currentIndex];
     const isCorrect = selectedOption === currentQ.correct;
-
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-    }
-
+    if (isCorrect) setScore(prev => prev + 1);
     setShowExplanation(true);
-
     setTimeout(() => {
       if (currentIndex < questions.length - 1) {
         setCurrentIndex(prev => prev + 1);
@@ -141,16 +131,22 @@ export default function EvolutionQuizPage({ setPage, setEvolutionQuizResult }) {
   const progress = `${currentIndex + 1} / ${questions.length}`;
 
   return (
-    <div className="quiz-sub-wrap" style={S.wrap}>
-      <div className="quiz-sub-container" style={S.container}>
-      <button
-        onClick={() => setPage('quiz')}
-        style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 24px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'14px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start', marginBottom:'1.5rem', display:'block' }}
-        onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
-        onMouseLeave={e => e.currentTarget.style.background='none'}
-      >
-        ← Back to Quizzes
-      </button>
+    <div className="evolution-quiz" style={S.wrap}>
+      <style>{`
+        @media (max-width: 768px) {
+          .evolution-quiz > div { padding: 1.5rem !important; }
+          .evolution-quiz .${S.title} { font-size: 20px !important; }
+          .evolution-quiz .${S.question} { font-size: 18px !important; }
+          .evolution-quiz .${S.option} { padding: 12px !important; font-size: 14px !important; }
+          .evolution-quiz .${S.btn} { font-size: 14px !important; }
+        }
+        @media (max-width: 480px) {
+          .evolution-quiz .${S.title} { font-size: 18px !important; }
+          .evolution-quiz .${S.question} { font-size: 16px !important; }
+          .evolution-quiz .${S.option} { padding: 10px !important; font-size: 13px !important; }
+        }
+      `}</style>
+      <div style={S.container}>
         <div style={S.title}>Evolution Quiz</div>
         <div style={S.progress}>Question {progress}</div>
         <div style={S.question}>{currentQ.question}</div>
@@ -159,33 +155,21 @@ export default function EvolutionQuizPage({ setPage, setEvolutionQuizResult }) {
             let optionStyle = { ...S.option };
             if (selectedOption === idx) {
               if (showExplanation) {
-                if (idx === currentQ.correct) {
-                  optionStyle = { ...optionStyle, ...S.correct };
-                } else {
-                  optionStyle = { ...optionStyle, ...S.incorrect };
-                }
-              } else {
-                optionStyle = { ...optionStyle, ...S.selected };
-              }
+                if (idx === currentQ.correct) optionStyle = { ...optionStyle, ...S.correct };
+                else optionStyle = { ...optionStyle, ...S.incorrect };
+              } else optionStyle = { ...optionStyle, ...S.selected };
             } else if (showExplanation && idx === currentQ.correct) {
               optionStyle = { ...optionStyle, ...S.correct };
             }
             return (
-              <button
-                key={idx}
-                style={optionStyle}
-                onClick={() => handleOptionClick(idx)}
-                disabled={showExplanation}
-              >
+              <button key={idx} style={optionStyle} onClick={() => handleOptionClick(idx)} disabled={showExplanation}>
                 {opt}
               </button>
             );
           })}
         </div>
         {selectedOption !== null && !showExplanation && (
-          <button style={S.btn} onClick={handleNext}>
-            Submit Answer
-          </button>
+          <button style={S.btn} onClick={handleNext}>Submit Answer</button>
         )}
         {showExplanation && (
           <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--grey-400)', marginTop: '1rem', textAlign: 'center' }}>

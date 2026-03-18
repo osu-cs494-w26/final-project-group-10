@@ -1,6 +1,6 @@
 /**
  * PokemonQuizResultPage.jsx
- * Displays score for Pokémon trivia quiz.
+ * Displays score for Pokémon trivia quiz. Responsive.
  */
 
 import React from 'react';
@@ -69,8 +69,18 @@ export default function PokemonQuizResultPage({ result, setPage, clearResult }) 
   };
 
   return (
-    <div style={S.wrap}>
-      <div className="quiz-result-container" style={S.container}>
+    <div className="pokemon-quiz-result" style={S.wrap}>
+      <style>{`
+        @media (max-width: 768px) {
+          .pokemon-quiz-result > div { padding: 2rem 1rem !important; }
+          .pokemon-quiz-result .${S.title} { font-size: 24px !important; }
+          .pokemon-quiz-result .${S.score} { font-size: 40px !important; }
+          .pokemon-quiz-result .${S.percentage} { font-size: 16px !important; }
+          .pokemon-quiz-result .${S.btnRow} { flex-direction: column !important; gap: 0.5rem !important; }
+          .pokemon-quiz-result .${S.btn} { width: 100% !important; }
+        }
+      `}</style>
+      <div style={S.container}>
         <div style={S.title}>Quiz Complete!</div>
         <div style={S.score}>{score} / {total}</div>
         <div style={S.percentage}>{percent}%</div>

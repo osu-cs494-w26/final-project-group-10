@@ -1,7 +1,7 @@
 /**
  * PersonalityResultPage.jsx
  * Displays nature, region affinity, ideal starter, and three team builds.
- * Features animated sprites and centered starter card.
+ * Features animated sprites and centered starter card. Responsive.
  */
 
 import React, { useState } from 'react';
@@ -167,9 +167,6 @@ const S = {
     padding: '12px 24px',
     cursor: 'pointer',
     transition: 'all 0.15s',
-    '&:hover': {
-      background: 'var(--grey-600)',
-    },
   },
   saveBtn: {
     background: 'var(--grey-700)',
@@ -182,9 +179,6 @@ const S = {
     padding: '12px 24px',
     cursor: 'pointer',
     transition: 'all 0.15s',
-    '&:hover': {
-      background: 'rgba(74, 222, 128, 0.1)',
-    },
   },
 };
 
@@ -255,16 +249,32 @@ export default function PersonalityResultPage({ result, setPage, clearQuizResult
   const accentColor = '#c8b820';
 
   return (
-    <div style={S.wrap}>
-      <div className="personality-result-container" style={S.container}>
-      <button
-        onClick={() => setPage('quiz')}
-        style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 24px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'14px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start', marginBottom:'1.5rem', display:'block' }}
-        onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
-        onMouseLeave={e => e.currentTarget.style.background='none'}
-      >
-        ← Back to Quizzes
-      </button>
+    <div className="personality-result" style={S.wrap}>
+      <style>{`
+        @media (max-width: 768px) {
+          .personality-result > div { padding: 1.5rem !important; }
+          .personality-result .${S.title} { font-size: 20px !important; }
+          .personality-result .${S.natureName} { font-size: 24px !important; }
+          .personality-result .${S.starterCard} { max-width: 240px !important; }
+          .personality-result .${S.starterSprite} { width: 96px !important; height: 96px !important; }
+          .personality-result .${S.starterName} { font-size: 18px !important; }
+          .personality-result .${S.tab} { font-size: 14px !important; padding: 6px 12px !important; }
+          .personality-result .${S.teamGrid} { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important; }
+          .personality-result .${S.sprite} { width: 72px !important; height: 72px !important; }
+          .personality-result .${S.btnRow} button { font-size: 12px !important; padding: 10px 18px !important; }
+        }
+        @media (max-width: 480px) {
+          .personality-result .${S.titleRow} { flex-direction: column !important; gap: 0.5rem !important; }
+          .personality-result .${S.title} { font-size: 18px !important; }
+          .personality-result .${S.regionBadge} { font-size: 12px !important; }
+          .personality-result .${S.natureName} { font-size: 20px !important; }
+          .personality-result .${S.starterCard} { max-width: 100% !important; }
+          .personality-result .${S.teamGrid} { grid-template-columns: repeat(2, 1fr) !important; }
+          .personality-result .${S.btnRow} { flex-direction: column !important; }
+          .personality-result .${S.btnRow} button { width: 100% !important; }
+        }
+      `}</style>
+      <div style={S.container}>
         {/* Title with Region Badge */}
         <div style={S.titleRow}>
           <div style={S.title}>Your Trainer Personality</div>
@@ -279,64 +289,37 @@ export default function PersonalityResultPage({ result, setPage, clearQuizResult
           </div>
         </div>
 
-        {/* Ideal Starter - Centered Card */}
+        {/* Ideal Starter */}
         <div style={S.sectionTitle}>Your Ideal Starter</div>
         <div style={S.starterCard}>
           <img
             src={starterAnimatedUrl}
             alt={starterName}
             style={S.starterSprite}
-            onError={(e) => {
-              e.target.src = starterStaticUrl;
-            }}
+            onError={(e) => { e.target.src = starterStaticUrl; }}
           />
           <div style={S.starterName}>{starterName}</div>
         </div>
 
         {/* Team Tabs */}
         <div style={S.tabRow}>
-          <button
-            style={S.tab(activeTeam === 'balanced', accentColor)}
-            onClick={() => setActiveTeam('balanced')}
-          >
-            Balanced
-          </button>
-          <button
-            style={S.tab(activeTeam === 'offensive', accentColor)}
-            onClick={() => setActiveTeam('offensive')}
-          >
-            Offensive
-          </button>
-          <button
-            style={S.tab(activeTeam === 'defensive', accentColor)}
-            onClick={() => setActiveTeam('defensive')}
-          >
-            Defensive
-          </button>
+          <button style={S.tab(activeTeam === 'balanced', accentColor)} onClick={() => setActiveTeam('balanced')}>Balanced</button>
+          <button style={S.tab(activeTeam === 'offensive', accentColor)} onClick={() => setActiveTeam('offensive')}>Offensive</button>
+          <button style={S.tab(activeTeam === 'defensive', accentColor)} onClick={() => setActiveTeam('defensive')}>Defensive</button>
         </div>
 
         {/* Team Display */}
         <div style={{ ...S.sectionTitle, fontSize: '18px', marginBottom: '1rem' }}>
-          {activeTeam === 'balanced' && 'Balanced Build'}
-          {activeTeam === 'offensive' && 'Offensive Build'}
-          {activeTeam === 'defensive' && 'Defensive Build'}
+          {activeTeam === 'balanced' ? 'Balanced Build' : activeTeam === 'offensive' ? 'Offensive Build' : 'Defensive Build'}
         </div>
-
         <div style={S.teamGrid}>
           {teams[activeTeam].map((pokemon) => (
             <div key={pokemon.id} style={S.pokemonCard}>
-              <img
-                style={S.sprite}
-                src={getPokemonSpriteUrl(pokemon)}
-                alt={pokemon.name}
-                onError={(e) => {
-                  e.target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
-                }}
+              <img style={S.sprite} src={getPokemonSpriteUrl(pokemon)} alt={pokemon.name}
+                onError={(e) => { e.target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`; }}
               />
               <div style={S.pokemonName}>{pokemon.name}</div>
-              <div style={S.types}>
-                {pokemon.types.join(' / ')}
-              </div>
+              <div style={S.types}>{pokemon.types.join(' / ')}</div>
             </div>
           ))}
         </div>
