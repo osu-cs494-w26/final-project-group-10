@@ -100,15 +100,12 @@ export {
   healSelf,
 };
 
-
-/** Sorted list of all moves that are operational (usable in battle) */
 // Sorted list of every move marked as operational (battle ready).
 export const ALL_MOVES = Object.entries(MOVE_EFFECTS)
   .filter(([, v]) => v?.operational)
   .map(([k]) => k)
   .sort();
 
-/** Filter a Pokémon's learned moves to the first 4 operational ones */
 // Filters a Pokémon's learned moves to the first 4 that are operational.
 export function getOperationalMoves(learnedMoves) {
   return (learnedMoves || []).filter(m => MOVE_EFFECTS[m]?.operational).slice(0, 4);

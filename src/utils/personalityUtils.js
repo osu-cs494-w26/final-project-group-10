@@ -59,7 +59,7 @@ export async function fetchPokemonDetail(pokemonName) {
   const response = await fetch(`${API_BASE}/pokemon/${pokemonName}`);
   const data = await response.json();
 
-  // Extract animated sprite from Generation V (black-white animated)
+  // Extract animated sprite from Generation V 
   const animatedSprite = data.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default || null;
 
   return {
