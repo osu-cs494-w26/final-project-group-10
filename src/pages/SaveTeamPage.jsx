@@ -60,14 +60,15 @@ function makeTestMon() {
   };
 }
 
+// Compact icon-only party slot for the narrow mobile left column.
 function MiniPartySlot({ pokemon, idx, isSelected, onClick }) {
   const type = pokemon?.cachedData?.types?.[0];
   const bg   = isSelected ? 'rgba(255,255,255,0.12)' : pokemon ? (TYPE_BG[type] || 'var(--grey-800)') : 'var(--grey-900)';
   const border = isSelected ? '#4ade80' : pokemon ? (TYPE_COLORS[type] || 'var(--border-lt)') : 'var(--border)';
   return (
     <div onClick={onClick} style={{ background:bg, border:`1px solid ${border}`, borderLeft:`3px solid ${border}`, width:'52px', height:'52px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, position:'relative', transition:'all 0.15s' }}>
-      {pokemon?.cachedData?.sprite
-        ? <img src={pokemon.cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated' }} />
+      {(pokemon?.cachedData?.staticSprite || pokemon?.cachedData?.sprite)
+        ? <img src={pokemon.cachedData.staticSprite || pokemon.cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated' }} />
         : <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--grey-600)' }}>{idx + 1}</span>}
       {isSelected && <div style={{ position:'absolute', inset:0, boxShadow:'0 0 0 2px #4ade80 inset', pointerEvents:'none' }} />}
     </div>
@@ -87,8 +88,8 @@ function PartySlot({ pokemon, idx, isSelected, onClick, onDrop, onRemove, dragOv
       style={{ background:bg, borderTop:`1px solid ${borderColor}`, borderRight:`1px solid ${borderColor}`, borderBottom:`1px solid ${borderColor}`, borderLeft:`4px solid ${filled ? accentColor : (dragOver ? '#c0a820' : 'var(--border)')}`, padding:'10px 12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'10px', transition:'background 0.15s, border-color 0.15s', minHeight:'64px', position:'relative', boxShadow: isSelected ? '0 0 0 1px var(--white)' : 'none' }}>
       {filled ? (
         <>
-          {pokemon.cachedData?.sprite
-            ? <img src={pokemon.cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated', flexShrink:0 }} />
+          {(pokemon.cachedData?.staticSprite || pokemon.cachedData?.sprite)
+            ? <img src={pokemon.cachedData.staticSprite || pokemon.cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated', flexShrink:0 }} />
             : <div style={{ width:'40px', height:'40px', background:'var(--grey-700)', flexShrink:0 }} />}
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontFamily:'var(--font-display)', fontSize:'13px', textTransform:'uppercase', letterSpacing:'0.06em', color:'var(--white)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{pokemon.name.replace(/-/g,' ')}</div>
@@ -111,36 +112,8 @@ function PartySlot({ pokemon, idx, isSelected, onClick, onDrop, onRemove, dragOv
 }
 
 /* Main builder: Pokémon grid on the left, party slots on the right. */
-export default function SaveTeamPage({ setPage, user }) {
-  const [team,            setTeam]            = useState([]);
-function PokemonCard({ name, pokeData, teamFull, isDragging, isSelected, onDragStart, onDragEnd, onClick, onAdd }) {
-  const data  = pokeData[name];
-  const type1 = data?.types?.[0];
-  const type2 = data?.types?.[1];
-  const id    = ALL_POKEMON.indexOf(name) + 1;
-  const accent = type1 ? (TYPE_COLORS[type1] || '#888') : 'var(--border)';
-  const cardBg = type1 ? TYPE_BG[type1] : 'var(--grey-900)';
-
-  return (
-    <div draggable={!isDragging && !teamFull} onDragStart={e => { e.dataTransfer.effectAllowed='move'; onDragStart(name); }} onDragEnd={onDragEnd} onClick={onClick}
-      style={{ background:cardBg, borderTop:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderRight:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderBottom:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderLeft:`4px solid ${isSelected ? '#4ade80' : accent}`, padding:'14px 12px', cursor:'pointer', opacity: isDragging ? 0.4 : 1, display:'flex', flexDirection:'column', alignItems:'center', gap:'8px', minHeight:'180px', transition:'opacity 0.15s, filter 0.15s, border-color 0.1s', userSelect:'none', boxShadow: isSelected ? '0 0 12px rgba(74,222,128,0.3)' : 'none', position:'relative' }}
-      onMouseEnter={e=>{ if(!teamFull && !isDragging) e.currentTarget.style.filter='brightness(1.25)'; }}
-      onMouseLeave={e=>{ e.currentTarget.style.filter='none'; }}>
-      <span style={{ position:'absolute', top:'7px', right:'9px', fontFamily:'var(--font-mono)', fontSize:'10px', color:accent, opacity:0.7 }}>#{id}</span>
-      {data?.sprite ? <img src={data.sprite} alt={name} style={{ width:'96px', height:'96px', imageRendering:'pixelated' }} /> : <div style={{ width:'96px', height:'96px', background:'var(--grey-700)', opacity:0.4 }} />}
-      <div style={{ fontFamily:'var(--font-display)', fontSize:'13px', textTransform:'uppercase', letterSpacing:'0.06em', color:'var(--white)', textAlign:'center', lineHeight:1.2 }}>{name.replace(/-/g,' ')}</div>
-      <div style={{ display:'flex', gap:'5px', flexWrap:'wrap', justifyContent:'center' }}>
-        {type1 && <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', color:TYPE_COLORS[type1]||'#888', letterSpacing:'0.06em', border:`1px solid ${TYPE_COLORS[type1]||'#888'}`, padding:'1px 6px', background:`${TYPE_BG[type1]||'#222'}` }}>{type1}</span>}
-        {type2 && <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', color:TYPE_COLORS[type2]||'#888', letterSpacing:'0.06em', border:`1px solid ${TYPE_COLORS[type2]||'#888'}`, padding:'1px 6px', background:`${TYPE_BG[type2]||'#222'}` }}>{type2}</span>}
-      </div>
-      <button onClick={e=>{ e.stopPropagation(); onAdd && onAdd(); }} disabled={teamFull} style={{ width:'100%', background:'none', border:'1px solid var(--white)', color:'var(--white)', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase', padding:'5px 0', marginTop:'2px', transition:'all 0.1s', opacity: teamFull ? 0.3 : 1 }} onMouseEnter={e=>{ if(!teamFull) e.currentTarget.style.background='rgba(255,255,255,0.12)'; }} onMouseLeave={e=>e.currentTarget.style.background='none'}>Add</button>
-    </div>
-  );
-}
-
-// Main builder: Pokémon grid on the left, party slots on the right.
 export default function SaveTeamPage({ setPage, user, initialTeam }) {
-  const [team,            setTeam]            = useState(initialTeam || []); // Initialize with passed team
+  const [team,            setTeam]            = useState(initialTeam || []);
   const [search,          setSearch]          = useState('');
   const [filterType,      setFilterType]      = useState('all');
   const [customizeTarget, setCustomizeTarget] = useState(null);
@@ -192,17 +165,15 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
     team.forEach(p => { if (!p.cachedData && !pokeData[p.name]) fetchBasic(p.name); });
   }, [team]);
 
-  /* Memoized filtered list so typing/clicking doesn't recompute 600 items every render */
-  const filtered = React.useMemo(() => ALL_POKEMON.filter(n => {
-  // ===== FIX: Automatically populate team from initialTeam =====
-  // This ensures that when we arrive from the quiz, the team is already in the party slots
+  // Populates the party from the quiz result when arriving from the personality quiz.
   useEffect(() => {
     if (initialTeam && initialTeam.length > 0) {
       setTeam(initialTeam);
     }
   }, [initialTeam]);
 
-  const filtered = ALL_POKEMON.filter(n => {
+  // Memoized filtered list so typing does not recompute 600 items every render.
+  const filtered = React.useMemo(() => ALL_POKEMON.filter(n => {
     if (teamNames.has(n)) return false;
     if (!n.replace(/-/g,' ').toLowerCase().includes(search.toLowerCase().trim())) return false;
     if (n === 'testmon') return filterType === 'all' || filterType === 'normal';
@@ -252,9 +223,7 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
 
   const handleSave = (updated) => setTeam(prev => prev.map(p => p.name === updated.name ? updated : p));
 
-  /* Stable ref callbacks so PokemonCard memo is never busted by inline arrow functions.
-     The ref holds the latest version of handleCardClick and addToTeam without
-     causing child re-renders when the parent state changes. */
+  // Stable ref callbacks so PokemonCard memo is never busted by inline arrow functions.
   const cardClickRef = useRef(null);
   const cardAddRef   = useRef(null);
   const dragStartRef = useRef(null);
@@ -264,7 +233,7 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
   dragStartRef.current = setDraggedName;
   dragEndRef.current   = () => setDraggedName(null);
 
-  /* These stable wrappers never change identity so memo stays intact */
+  // Stable wrappers that never change identity so memo stays intact.
   const stableCardClick  = useCallback((name) => cardClickRef.current(name),  []);
   const stableCardAdd    = useCallback((name) => cardAddRef.current(name),    []);
   const stableDragStart  = useCallback((name) => dragStartRef.current(name),  []);
@@ -284,7 +253,7 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
       item: p.item,
       ability: p.ability,
       types: p.cachedData?.types || [],
-      sprite: p.cachedData?.sprite || null,
+      sprite: p.cachedData?.staticSprite || p.cachedData?.sprite || null,
       evs: p.evs || { hp:0, attack:0, defense:0, 'special-attack':0, 'special-defense':0, speed:0 },
       ivs: p.ivs || { hp:31, attack:31, defense:31, 'special-attack':31, 'special-defense':31, speed:31 },
     }));
@@ -321,7 +290,7 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
         const full = await fetchPokeData(p.name);
         return { ...p, cachedData: full };
       } catch {
-        return { ...p, cachedData: { sprite: p.sprite, types: p.types || [], moves: p.moves || [] } };
+        return { ...p, cachedData: { sprite: p.staticSprite || p.sprite, staticSprite: p.staticSprite || p.sprite, types: p.types || [], moves: p.moves || [] } };
       }
     }));
     setTeam(rehydrated);
@@ -349,7 +318,7 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
     ? `Slot ${selectedSlot + 1} selected click slot to swap or Pokémon to add`
     : 'Click or drag a Pokémon to add it to your party';
 
-    if (!allLoaded) {
+  if (!allLoaded) {
     const pct    = Math.round(loadProgress * 100);
     const loaded = Math.round(loadProgress * ALL_POKEMON.length);
     return (
@@ -378,7 +347,6 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
           <div style={{ fontFamily:'var(--font-display)', fontSize:'16px', letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--white)' }}>Save Team</div>
           <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:(selectedCard || selectedSlot !== null) ? '#c0a820' : 'var(--grey-500)', transition:'color 0.2s', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{saveMsg || hintText}</div>
         </div>
-        {/* Save Slots button: mobile shows a dropdown trigger */}
         {isMobile ? (
           <button onClick={() => setSaveSlotOpen(o => !o)} style={{ background: saveSlotOpen ? 'rgba(64,144,208,0.2)' : 'none', border:'1px solid #4090d0', color:'#4090d0', padding:'8px 12px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase', flexShrink:0 }}>
             Save {saveSlotOpen ? '▲' : '▼'}
@@ -390,22 +358,17 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
         )}
       </div>
 
-      {/* Mobile save slot dropdown overlay */}
       {isMobile && saveSlotOpen && (
         <SaveSlotPanel slots={slots} currentTeam={team} onSave={saveToSlot} onLoad={loadFromSlot} onDelete={deleteSlot} saving={saving} teamName={teamName} onTeamNameChange={setTeamName} isMobileDropdown={true} onClose={() => setSaveSlotOpen(false)} />
       )}
 
       {isMobile ? (
-        /* Mobile layout: narrow party column on left, Pokémon grid on right */
         <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
-
-          {/* Left: compact mini party column */}
           <div style={{ width:'60px', flexShrink:0, borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', alignItems:'center', gap:'4px', padding:'6px 4px', overflowY:'auto', background:'var(--grey-900)' }}>
             <div style={{ fontFamily:'var(--font-mono)', fontSize:'8px', color:'var(--grey-600)', textTransform:'uppercase', marginBottom:'2px', letterSpacing:'0.08em' }}>{team.length}/6</div>
             {[0,1,2,3,4,5].map(idx => (
               <MiniPartySlot key={idx} pokemon={team[idx]||null} idx={idx} isSelected={selectedSlot===idx} onClick={() => handleSlotClick(idx)} />
             ))}
-            {/* Edit and Delete buttons when a filled slot is selected */}
             {selectedSlot !== null && team[selectedSlot] && (
               <>
                 <button onClick={() => setCustomizeTarget(team[selectedSlot])} style={{ background:'rgba(255,255,255,0.08)', border:'1px solid var(--border-lt)', color:'var(--white)', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', padding:'3px 6px', marginTop:'4px', width:'52px', textTransform:'uppercase' }}>Edit</button>
@@ -414,10 +377,7 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
             )}
           </div>
 
-          {/* Right: Pokémon grid with filter bar */}
           <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-
-            {/* Filter bar: search + dropdown trigger */}
             <div style={{ padding:'6px 8px', borderBottom:'1px solid var(--border)', background:'var(--grey-900)', display:'flex', gap:'6px', alignItems:'center', flexShrink:0 }}>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…" style={{ flex:1, background:'var(--grey-800)', border:'1px solid var(--border-mid)', padding:'5px 8px', color:'var(--white)', fontSize:'11px', fontFamily:'var(--font-mono)', outline:'none', minWidth:0 }} onFocus={e=>e.target.style.borderColor='var(--border-lt)'} onBlur={e=>e.target.style.borderColor='var(--border-mid)'} />
               <button onClick={() => setFilterOpen(o => !o)} style={{ background: filterType !== 'all' ? (TYPE_BG[filterType]||'var(--grey-700)') : 'var(--grey-800)', border:`1px solid ${filterType !== 'all' ? (TYPE_COLORS[filterType]||'var(--border-lt)') : 'var(--border-mid)'}`, color: filterType !== 'all' ? (TYPE_COLORS[filterType]||'var(--white)') : 'var(--grey-300)', padding:'5px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', flexShrink:0 }}>
@@ -425,7 +385,6 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
               </button>
             </div>
 
-            {/* Filter dropdown panel */}
             {filterOpen && (
               <div style={{ background:'var(--grey-900)', borderBottom:'1px solid var(--border)', padding:'8px', display:'flex', flexWrap:'wrap', gap:'5px', flexShrink:0 }}>
                 <button onClick={()=>{setFilterType('all'); setFilterOpen(false);}} style={{ padding:'4px 8px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', background: filterType==='all' ? 'var(--grey-600)' : 'var(--grey-800)', border:`1px solid ${filterType==='all' ? 'var(--border-lt)' : 'var(--border-mid)'}`, color:'var(--white)' }}>All</button>
@@ -435,7 +394,6 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
               </div>
             )}
 
-            {/* 2-column Pokémon grid: virtualised so only ~20 rows render at once */}
             <VirtualGrid
               items={filtered}
               pokeData={pokeData}
@@ -448,7 +406,6 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
               onAdd={stableCardAdd}
             />
 
-            {/* Footer count */}
             <div style={{ padding:'4px 10px', borderTop:'1px solid var(--border)', fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--grey-600)', flexShrink:0, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span>{filtered.length} Pokémon</span>
               {(selectedCard || selectedSlot !== null) && (
@@ -459,10 +416,8 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
         </div>
 
       ) : (
-        /* Desktop layout: party | grid | save slots */
         <div className="battle-builder-layout">
 
-          {/* Left: Party */}
           <div className="battle-builder-party">
             <div style={{ padding:'12px 16px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
               <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--grey-400)' }}>Your Party</span>
@@ -483,7 +438,6 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
             </div>
           </div>
 
-          {/* Center: Pokémon grid */}
           <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
             <div style={{ padding:'10px 14px', borderBottom:'1px solid var(--border)', background:'var(--grey-900)', display:'flex', gap:'8px', flexWrap:'wrap', alignItems:'center', flexShrink:0 }}>
               <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search Pokémon..." style={{ background:'var(--grey-800)', border:'1px solid var(--border-mid)', padding:'6px 12px', color:'var(--white)', fontSize:'12px', fontFamily:'var(--font-mono)', outline:'none', width:'160px', flexShrink:0 }} onFocus={e=>e.target.style.borderColor='var(--border-lt)'} onBlur={e=>e.target.style.borderColor='var(--border-mid)'} />
@@ -513,7 +467,6 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
             </div>
           </div>
 
-          {/* Right: Save slots */}
           <SaveSlotPanel slots={slots} currentTeam={team} onSave={saveToSlot} onLoad={loadFromSlot} onDelete={deleteSlot} saving={saving} teamName={teamName} onTeamNameChange={setTeamName} />
         </div>
       )}

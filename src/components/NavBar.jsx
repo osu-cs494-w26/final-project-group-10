@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 
 // Sub-links shown in the Battle hover dropdown.
+// Sub-links shown in the Battle hover dropdown.
 const BATTLE_SUBSECTIONS = [
   { label: 'Quick Battle',   path: '/battle',          desc: 'Random vs Random',    accent: '#e06030' },
   { label: 'Build Team',     path: '/team/build',      desc: 'Custom Team Builder', accent: '#4090d0' },
@@ -15,17 +16,17 @@ const BATTLE_SUBSECTIONS = [
 ];
 
 const NAV_LINKS = [
-  { label: 'Pokédex',             path: '/pokedex',   activePrefixes: ['/pokedex'] },
-  { label: 'Battle',              path: '/battle',    activePrefixes: ['/battle', '/team/build'], hasDropdown: true },
-  { label: "Who's That Pokémon?", path: '/quiz',      activePrefixes: ['/quiz'] },
-  { label: 'Personality',         path: '/personality', activePrefixes: ['/personality'] },
+  { label: 'Pokédex',             path: '/pokedex', activePrefixes: ['/pokedex'] },
+  { label: 'Battle',              path: '/battle',  activePrefixes: ['/battle', '/team/build'], hasDropdown: true },
+  { label: "Who's That Pokémon?", path: '/wtp',     activePrefixes: ['/wtp'] },
+  { label: 'Quizzes',             path: '/quiz',    activePrefixes: ['/quiz'] },
 ];
 
 const ACCENT_FOR_PATH = {
-  '/pokedex':     '#e06030',
-  '/battle':      '#4090d0',
-  '/quiz':        '#60c060',
-  '/personality': '#c8b820',
+  '/pokedex': '#e06030',
+  '/battle':  '#4090d0',
+  '/wtp':     '#60c060',
+  '/quiz':    '#c8b820',
 };
 
 /* Check if currentPath matches any of the given prefixes */
@@ -72,7 +73,7 @@ function MobileDrawer({ currentPath, onNavigate, onQuickBattle, onSignOut, user,
         return (
           <div key={path}>
             <button
-              onClick={() => { hasDropdown ? onQuickBattle() : onNavigate(path); onClose(); }}
+              onClick={() => { onNavigate(path); onClose(); }}
               style={{
                 width: '100%', background: 'transparent', border: 'none',
                 borderLeft: `4px solid ${isActive ? accent : 'transparent'}`,
@@ -83,7 +84,7 @@ function MobileDrawer({ currentPath, onNavigate, onQuickBattle, onSignOut, user,
               }}>
               {label}
             </button>
-            {/* Battle sub-links shown inline under Battle row */}
+            {}
             {hasDropdown && (
               <div style={{ paddingLeft: '20px', borderLeft: '1px solid var(--border-mid)', marginLeft: '4px' }}>
                 {BATTLE_SUBSECTIONS.map(sub => (
@@ -113,11 +114,12 @@ function MobileDrawer({ currentPath, onNavigate, onQuickBattle, onSignOut, user,
 }
 
 /* Renders the full navigation bar.
-   page prop is now a URL path string from useLocation().pathname */
+   page prop is a URL path string from useLocation().pathname. */
 export default function NavBar({ page, setPage, user, onSignOut, onQuickBattle }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [drawerOpen,   setDrawerOpen]   = useState(false);
 
+  
   /* Navigate to a URL path via the setPage adapter in App.jsx or directly */
   const onNavigate = (path) => {
     setPage(path);
@@ -152,7 +154,7 @@ export default function NavBar({ page, setPage, user, onSignOut, onQuickBattle }
                 onMouseEnter={() => hasDropdown && setDropdownOpen(true)}
                 onMouseLeave={() => hasDropdown && setDropdownOpen(false)}>
                 <button
-                  onClick={() => hasDropdown ? onQuickBattle() : onNavigate(path)}
+                  onClick={() => onNavigate(path)}
                   style={{
                     background:    isActive || isOpen ? 'rgba(255,255,255,0.06)' : 'transparent',
                     border:        'none',

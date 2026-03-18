@@ -18,8 +18,9 @@ import { questionBank } from '../data/quizQuestions';
 
 const S = {
   wrap: {
+    position: 'relative',
+    zIndex: 1,
     minHeight: '100vh',
-    background: 'var(--black)',
     color: 'var(--white)',
     padding: '2rem',
     fontFamily: 'var(--font-mono)',
