@@ -15,15 +15,6 @@ export function registerPoisonMoves() {
   registerMove('acid spray', {
     secondary: { stat: 'spdef', stages: -2, target: 'foe', chance: 100 },
   });
-  MOVE_EFFECTS['belch'] = {
-    operational: true,
-    onUse: (ctx) => {
-      if (!ctx.attacker.volatile?.consumedBerry) {
-        ctx.log.push(`${ctx.attacker.name} hasn't eaten a Berry yet Belch failed!`);
-        ctx.absorbed = true;
-      }
-    },
-  };
   registerMove('clear smog', {
     onHit: (ctx) => {
       ctx.defender.stages = {};

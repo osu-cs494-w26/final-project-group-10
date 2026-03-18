@@ -9,20 +9,14 @@ import { natureRegionMap, natureStarterMap } from '../data/personalityMappings';
 
 const S = {
   wrap: {
-    position: 'relative',
-    zIndex: 1,
     minHeight: '100vh',
     color: 'var(--white)',
-    padding: '2rem',
+    padding: 'clamp(1rem,3vw,2rem)',
     fontFamily: 'var(--font-mono)',
+    position: 'relative',
+    zIndex: 1,
   },
-  container: {
-    maxWidth: '900px',
-    margin: '0 auto',
-    background: 'var(--grey-900)',
-    border: '1px solid var(--border)',
-    padding: '2rem',
-  },
+  container: {},
   titleRow: {
     display: 'flex',
     alignItems: 'center',
@@ -262,7 +256,15 @@ export default function PersonalityResultPage({ result, setPage, clearQuizResult
 
   return (
     <div style={S.wrap}>
-      <div style={S.container}>
+      <div className="personality-result-container" style={S.container}>
+      <button
+        onClick={() => setPage('quiz')}
+        style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 24px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'14px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start', marginBottom:'1.5rem', display:'block' }}
+        onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+        onMouseLeave={e => e.currentTarget.style.background='none'}
+      >
+        ← Back to Quizzes
+      </button>
         {/* Title with Region Badge */}
         <div style={S.titleRow}>
           <div style={S.title}>Your Trainer Personality</div>

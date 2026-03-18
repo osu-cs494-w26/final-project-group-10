@@ -83,18 +83,8 @@ export function registerGroundMoves() {
   registerMove('mud shot', {
     secondary: { stat: 'spd', stages: -1, target: 'foe', chance: 100 },
   });
-  MOVE_EFFECTS['mud sport'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.fieldCondition = { ...(ctx.fieldCondition || {}), mudSport: true };
-      ctx.log.push('Mud weakened Electric-type moves!');
-    },
-  };
   registerMove('mud-slap', {
     secondary: { stat: 'acc', stages: -1, target: 'foe', chance: 100 },
-  });
-  registerMove('precipice blades', {
-    onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} attacked all adjacent foes!`),
   });
   MOVE_EFFECTS['rototiller'] = {
     operational: true, power: null,
@@ -110,7 +100,6 @@ export function registerGroundMoves() {
           statChange(ctx, 'spatk', 1, 'foe');
         }
       });
-      ctx.log.push('Grass-type Pokémon had their stats boosted!');
     },
   };
   MOVE_EFFECTS['sand attack'] = {

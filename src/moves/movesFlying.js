@@ -91,15 +91,6 @@ export function registerFlyingMoves() {
   registerMove('hurricane', {
     onHit: (ctx) => { if (Math.random() * 100 < 30) inflictConfusion(ctx, ctx.defender); },
   });
-  MOVE_EFFECTS['mirror move'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      const last = ctx.defender.volatile?.lastMove;
-      if (!last) { ctx.log.push('But it failed!'); return; }
-      ctx.log.push(`${ctx.attacker.name} copied ${last}!`);
-      ctx.mirrorMove = last;
-    },
-  };
   registerMove('oblivion wing', { onHit: drainEffect(0.75) });
   registerMove('peck');
   registerMove('pluck', {
@@ -138,25 +129,6 @@ export function registerFlyingMoves() {
     },
     flinchChance: 30,
     highCrit: true,
-  });
-  registerMove('sky drop', {
-    onUse: (ctx) => {
-      if (!ctx.attacker.volatile) ctx.attacker.volatile = {};
-      if (!ctx.attacker.volatile.skyDropCharging) {
-        ctx.attacker.volatile.skyDropCharging = true;
-        ctx.attacker.volatile.invulnerable    = 'sky';
-        ctx.attacker.volatile.lockedMove      = 'sky drop';
-        if (!ctx.defender.volatile) ctx.defender.volatile = {};
-        ctx.defender.volatile.invulnerable = 'skydropped';
-        ctx.log.push(`${ctx.attacker.name} took ${ctx.defender.name} into the sky!`);
-        ctx.absorbed = true;
-      } else {
-        delete ctx.attacker.volatile.skyDropCharging;
-        delete ctx.attacker.volatile.invulnerable;
-        delete ctx.attacker.volatile.lockedMove;
-        if (ctx.defender.volatile) delete ctx.defender.volatile.invulnerable;
-      }
-    },
   });
   MOVE_EFFECTS['tailwind'] = {
     operational: true, power: null,

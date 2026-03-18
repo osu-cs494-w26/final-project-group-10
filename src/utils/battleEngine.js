@@ -1,7 +1,7 @@
 /*
  * battleEngine.js Pure battle logic with no React or fetch.
  * Handles stat calculation, damage formula, type chart, move execution,
- * status effects, and the battler factory. All functions are side-agnostic.
+ * status effects, and the battler factory. All functions are side agnostic.
  */
 
 // All battles run at a fixed level 50.
@@ -125,7 +125,7 @@ export function sideAGoesFirst(sideA, sideB, moveDataA, moveDataB) {
 export function accuracyCheck(moveData, attacker, defender, ignoreAccEva = false) {
   if (!moveData || moveData.accuracy == null) return true;
   if (attacker?.volatile?.lockOn) {
-    delete attacker.volatile.lockOn; // one-time use
+    delete attacker.volatile.lockOn; 
     return true;
   }
   // ignoreAccEva: move ignores accuracy/evasion stage changes (Shadow Punch, Feint Attack, etc.)
@@ -247,13 +247,13 @@ export function executeMove(attacker, defender, moveName, moveDataMap, weather, 
   if (defender.volatile?.magicCoat && isStatusMove) {
     delete defender.volatile.magicCoat;
     logs.push(`${defender.name}'s Magic Coat reflected the move!`);
-    // Re-run the move with attacker and defender swapped
+    // Rerun the move with attacker and defender swapped
     const reflectCtx = { attacker: defender, defender: attacker, moveData, weather, log: logs, damage: 0, absorbed: false, forceSwitch: null };
     if (effect?.onUse) effect.onUse(reflectCtx);
     return { logs, defHpAfter: defender.hp, atkHpAfter: attacker.hp, defFainted: defender.fainted, atkFainted: attacker.fainted, forceSwitch: null };
   }
 
-  // Snatch if defender has snatch active and this is a self-targeting support move, steal it
+  // Snatch if defender has snatch active and this is a self targeting support move, steal it
   if (defender.volatile?.snatch && isStatusMove && moveData?.target === 'user') {
     delete defender.volatile.snatch;
     logs.push(`${defender.name} snatched the move!`);
@@ -361,8 +361,8 @@ export function executeMove(attacker, defender, moveName, moveDataMap, weather, 
 }
 
 
-// applyVolatileTick: per-turn volatile effects (leech seed, ingrain, aqua ring, curse, perish, screens, yawn)
-// Processes end-of-turn volatile effects like burn, poison, and leech seed.
+// applyVolatileTick: per turn volatile effects (leech seed, ingrain, aqua ring, curse, perish, screens, yawn)
+// Processes end of turn volatile effects like burn, poison, and leech seed.
 export function applyVolatileTick(pokemon, opponent) {
   const logs = [];
   if (!pokemon.volatile) return { logs };
@@ -502,13 +502,8 @@ export function applyVolatileTick(pokemon, opponent) {
     }
   }
 
-  // Clear single-turn flags
+  // Clear single turn flags
   delete v.protect;
-  // Destiny Bond clears at start of the user's NEXT turn (handled by clearing it after
-  // a turn completes volatile tick runs end-of-turn, so clearing here is correct
-  // only if we want it to last exactly one full round. Per spec it lasts until the user
-  // takes another action, so we clear it in checkCanMove instead).
-  // Keep destinyBond persistent it is cleared in battleEngine executeMove after it triggers.
 
   if (pokemon.hp === 0 && !pokemon.fainted) pokemon.fainted = true;
   return { logs };
@@ -578,7 +573,7 @@ export function checkCanMove(pokemon) {
 
   // Locked into a charge move (Fly, Geomancy, Skull Bash, etc.) forced to continue
   if (pokemon.volatile?.lockedMove) {
-    // canMove stays true the move will auto-fire via resolvedMoves override
+    // canMove stays true the move will auto fire via resolvedMoves override
     logs.push(`${pokemon.name} is locked into ${pokemon.volatile.lockedMove}!`);
   }
 

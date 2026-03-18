@@ -1,6 +1,6 @@
 /**
  * PersonalityQuizPage.jsx
- * A multi-step quiz to determine the user's Pokémon nature.
+ * A multi step quiz to determine the user's Pokémon nature.
  * Asks 10 random questions from a bank of 25.
  * On completion, navigates to result page with nature and team.
  */
@@ -18,20 +18,10 @@ import { questionBank } from '../data/quizQuestions';
 
 const S = {
   wrap: {
-    position: 'relative',
-    zIndex: 1,
-    minHeight: '100vh',
-    color: 'var(--white)',
-    padding: '2rem',
-    fontFamily: 'var(--font-mono)',
+    position: 'relative', zIndex: 1,
+    color: 'var(--white)', fontFamily: 'var(--font-mono)',
   },
-  container: {
-    maxWidth: '600px',
-    margin: '0 auto',
-    background: 'var(--grey-900)',
-    border: '1px solid var(--border)',
-    padding: '2rem',
-  },
+  container: {},
   title: {
     fontFamily: 'var(--font-display)',
     fontSize: '24px',
@@ -186,8 +176,8 @@ const computeResults = async (scores) => {
 
   if (initialLoading) {
     return (
-      <div style={S.wrap}>
-        <div style={S.container}>
+      <div className="quiz-sub-wrap" style={S.wrap}>
+        <div className="quiz-sub-container" style={S.container}>
           <div style={S.title}>Loading Quiz...</div>
           <div style={S.loadingContainer}>
             <div style={S.loadingText}>Preparing your personality assessment</div>
@@ -200,8 +190,8 @@ const computeResults = async (scores) => {
 
   if (questions.length === 0) {
     return (
-      <div style={S.wrap}>
-        <div style={S.container}>
+      <div className="quiz-sub-wrap" style={S.wrap}>
+        <div className="quiz-sub-container" style={S.container}>
           <div style={S.title}>Error</div>
           <div style={S.loadingContainer}>
             <div style={S.loadingText}>Could not load quiz questions</div>
@@ -221,8 +211,16 @@ const computeResults = async (scores) => {
   const progress = `${currentIndex + 1} / ${questions.length}`;
 
   return (
-    <div style={S.wrap}>
-      <div style={S.container}>
+    <div className="quiz-sub-wrap" style={S.wrap}>
+      <div className="quiz-sub-container" style={S.container}>
+      <button
+        onClick={() => setPage('quiz')}
+        style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 24px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'14px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start', marginBottom:'1.5rem', display:'block' }}
+        onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+        onMouseLeave={e => e.currentTarget.style.background='none'}
+      >
+        ← Back to Quizzes
+      </button>
         <div style={S.title}>Trainer Personality Quiz</div>
         <div style={S.progress}>Question {progress}</div>
         

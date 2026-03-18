@@ -1,7 +1,7 @@
 /*
  * useBattle.js React hook that drives the battle state machine.
- * computeTurn() returns an AnimStep array that BattlePage plays frame-by-frame.
- * Fully side-agnostic: supports 1P-vs-AI or 2P by changing controllerType.
+ * computeTurn() returns an AnimStep array that BattlePage plays frame by frame.
+ * Fully side-agnostic: supports 1P-vs-AI 
  */
 
 import { useState, useRef, useCallback } from 'react';
@@ -43,7 +43,7 @@ export function useBattle() {
 
   const setMoveDataMap = useCallback(map => { mdc.current = map; }, []);
 
-  // Deep-clone a battler for snapshot (avoids sharing refs)
+  // Deep clone a battler for snapshot (avoids sharing refs)
   const cloneBattler = b => b ? { ...b, stages: { ...b.stages }, pp: { ...b.pp } } : null;
 
   const takeSnap = useCallback(() => {
@@ -123,7 +123,7 @@ const computeTurn = useCallback((moveNamesInput, isSwitchTurn = false) => {
 
     addLog(`--- Turn ${s.turn} ---`);
 
-    // Clear single-turn volatile flags
+    // Clear single turn volatile flags
     s.teams.forEach((team, si) => {
       const poke = team[s.activeIdx[si]];
       if (poke?.volatile?.protect)          delete poke.volatile.protect;

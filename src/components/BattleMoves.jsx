@@ -1,6 +1,6 @@
 /*
  * BattleMoves.jsx Four move buttons shown during the player's turn.
- * Displays type, PP, category badge, and type-effectiveness against the opponent.
+ * Displays type, PP, category badge, and type effectiveness against the opponent.
  */
 import React from 'react';
 

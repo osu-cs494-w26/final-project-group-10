@@ -16,6 +16,7 @@ export default function GameModeCard({ mode, onSelect, index, featured = false }
       onClick={() => onSelect(mode.key)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className="wtp-mode-card-inner"
       style={{
         background: hovered ? mode.bg : 'var(--grey-900)',
         borderTop: `1px solid ${hovered ? mode.accent : 'var(--border)'}`,

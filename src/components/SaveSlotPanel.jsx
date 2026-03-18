@@ -1,7 +1,7 @@
 /*
  * SaveSlotPanel.jsx Sidebar listing all 10 Supabase save slots with
  * load, overwrite, and delete actions. Renders as a fixed sidebar on
- * desktop or a full-screen slide-down panel on mobile.
+ * desktop or a full screen slide down panel on mobile.
  */
 
 import React, { useState } from 'react';

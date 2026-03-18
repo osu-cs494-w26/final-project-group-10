@@ -27,21 +27,6 @@ export function registerElectricMoves() {
     operational: true, power: null,
     onUse: (ctx) => statChange(ctx, 'spatk', -2, 'foe'),
   };
-  MOVE_EFFECTS['electric terrain'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.fieldCondition = { ...(ctx.fieldCondition || {}), electricTerrain: 5 };
-      ctx.log.push('An electric current ran across the battlefield!');
-    },
-  };
-  MOVE_EFFECTS['electrify'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (!ctx.defender.volatile) ctx.defender.volatile = {};
-      ctx.defender.volatile.electrified = true;
-      ctx.log.push(`${ctx.defender.name}'s move was electrified!`);
-    },
-  };
   MOVE_EFFECTS['electro ball'] = {
     operational: true,
     onUse: (ctx) => {
@@ -57,13 +42,6 @@ export function registerElectricMoves() {
   registerMove('fusion bolt', {
     onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used Fusion Bolt!`),
   });
-  MOVE_EFFECTS['ion deluge'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.fieldCondition = { ...(ctx.fieldCondition || {}), ionDeluge: true };
-      ctx.log.push('A deluge of ions showers the area!');
-    },
-  };
   MOVE_EFFECTS['magnetic flux'] = {
     operational: true, power: null,
     onUse: (ctx) => {
@@ -73,14 +51,6 @@ export function registerElectricMoves() {
         statChange(ctx, 'spdef', 1, 'self');
       }
       ctx.log.push(`${ctx.attacker.name} manipulated magnetic energy!`);
-    },
-  };
-  MOVE_EFFECTS['magnet rise'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (!ctx.attacker.volatile) ctx.attacker.volatile = {};
-      ctx.attacker.volatile.magnetRise = 5;
-      ctx.log.push(`${ctx.attacker.name} levitated on electromagnetism!`);
     },
   };
   registerMove('nuzzle', {

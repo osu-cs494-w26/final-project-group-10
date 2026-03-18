@@ -6,14 +6,6 @@ import { MOVE_EFFECTS, registerMove, statChange, inflictConfusion, drainEffect, 
 
 export function registerGrassMoves() {
   registerMove('absorb', { onHit: drainEffect(0.5) });
-  MOVE_EFFECTS['aromatherapy'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      const team = ctx.attackerTeam ?? [ctx.attacker];
-      team.forEach(p => { p.status = 'none'; });
-      ctx.log.push('A soothing aroma wafted through the air and cured all status conditions!');
-    },
-  };
   registerMove('bullet seed', {
     onUse: (ctx) => {
       const roll = Math.random();
@@ -31,13 +23,6 @@ export function registerGrassMoves() {
   registerMove('energy ball', {
     secondary: { stat: 'spdef', stages: -1, target: 'foe', chance: 10 },
   });
-  MOVE_EFFECTS["forest's curse"] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (!ctx.defender.types.includes('grass')) ctx.defender.types = [...ctx.defender.types, 'grass'];
-      ctx.log.push(`${ctx.defender.name} was cursed with a Grass type!`);
-    },
-  };
   registerMove('frenzy plant', {
     onHit: (ctx) => {
       if (!ctx.attacker.volatile) ctx.attacker.volatile = {};
@@ -46,10 +31,6 @@ export function registerGrassMoves() {
     },
   });
   registerMove('giga drain', { onHit: drainEffect(0.5) });
-  registerMove('grass knot');
-  registerMove('grass pledge', {
-    onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used Grass Pledge!`),
-  });
   MOVE_EFFECTS['grass whistle'] = {
     operational: true, power: null,
     onUse: (ctx) => {
@@ -57,13 +38,6 @@ export function registerGrassMoves() {
       ctx.defender.status = 'slp';
       ctx.defender.sleepCounter = Math.floor(Math.random() * 3) + 1;
       ctx.log.push(`${ctx.defender.name} fell asleep!`);
-    },
-  };
-  MOVE_EFFECTS['grassy terrain'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.fieldCondition = { ...(ctx.fieldCondition || {}), grassyTerrain: 5 };
-      ctx.log.push('Grass grew to cover the battlefield!');
     },
   };
   registerMove('horn leech', { onHit: drainEffect(0.5) });
@@ -96,9 +70,6 @@ export function registerGrassMoves() {
   registerMove('magical leaf');
   registerMove('mega drain', { onHit: drainEffect(0.5) });
   registerMove('needle arm', { flinchChance: 30 });
-  registerMove('petal blizzard', {
-    onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} unleashed a storm of petals!`),
-  });
   registerMove('petal dance', {
     onHit: (ctx) => {
       if (!ctx.attacker.volatile) ctx.attacker.volatile = {};
@@ -185,11 +156,4 @@ export function registerGrassMoves() {
   };
   registerMove('vine whip');
   registerMove('wood hammer', { onHit: recoilEffect(1 / 3) });
-  MOVE_EFFECTS['worry seed'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.defender.ability = 'insomnia';
-      ctx.log.push(`${ctx.defender.name}'s Ability changed to Insomnia!`);
-    },
-  };
 }

@@ -7,22 +7,12 @@ import React from 'react';
 
 const S = {
   wrap: {
-    position: 'relative',
-    zIndex: 1,
     minHeight: 'calc(100vh - var(--nav-h))',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '2rem',
+    display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center',
+    padding: '2rem', position: 'relative', zIndex: 1,
   },
-  container: {
-    maxWidth: '600px',
-    width: '100%',
-    background: 'var(--grey-900)',
-    border: '1px solid var(--border)',
-    padding: '3rem 2rem',
-    textAlign: 'center',
-  },
+  container: {},
   title: {
     fontFamily: 'var(--font-display)',
     fontSize: '28px',
@@ -75,17 +65,16 @@ export default function PokemonQuizResultPage({ result, setPage, clearResult }) 
   };
 
   const handleBack = () => {
-    clearResult();
     setPage('quiz');
   };
 
   return (
     <div style={S.wrap}>
-      <div style={S.container}>
+      <div className="quiz-result-container" style={S.container}>
         <div style={S.title}>Quiz Complete!</div>
         <div style={S.score}>{score} / {total}</div>
         <div style={S.percentage}>{percent}%</div>
-        <div style={S.btnRow}>
+        <div className="quiz-btn-row" style={S.btnRow}>
           <button style={S.btn} onClick={handleRetake}>Retake Quiz</button>
           <button style={S.btn} onClick={handleBack}>Back to Quizzes</button>
         </div>

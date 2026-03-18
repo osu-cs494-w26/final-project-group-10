@@ -41,9 +41,6 @@ export function registerFireMoves() {
     flinchChance: 10,
     onHit: (ctx) => secondaryStatus(ctx, 'brn', 10),
   });
-  registerMove('fire pledge', {
-    onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used Fire Pledge!`),
-  });
   registerMove('fire punch', {
     onHit: (ctx) => secondaryStatus(ctx, 'brn', 10),
   });
@@ -76,7 +73,6 @@ export function registerFireMoves() {
   registerMove('fusion flare', {
     onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used Fusion Flare!`),
   });
-  registerMove('heat crash');
   registerMove('heat wave', {
     onHit: (ctx) => secondaryStatus(ctx, 'brn', 10),
   });
@@ -115,13 +111,6 @@ export function registerFireMoves() {
   registerMove('searing shot', {
     onHit: (ctx) => secondaryStatus(ctx, 'brn', 30),
   });
-  MOVE_EFFECTS['sunny day'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.weather = { type: 'sun', turns: 5 };
-      ctx.log.push('The sunlight turned harsh!');
-    },
-  };
   registerMove('v-create', {
     onHit: (ctx) => {
       statChange(ctx, 'def',   -1, 'self');

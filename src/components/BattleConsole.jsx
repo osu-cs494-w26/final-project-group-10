@@ -1,11 +1,11 @@
 /*
- * BattleConsole.jsx Scrolling battle log panel showing turn-by-turn messages.
+ * BattleConsole.jsx Scrolling battle log panel showing turn by turn messages.
  */
 
 import React, { useEffect, useRef } from 'react';
 
-// Scrollable battle log auto-scrolls to bottom on new entries
-// Renders the message log and auto-scrolls to the latest entry.
+// Scrollable battle log auto scrolls to bottom on new entries
+// Renders the message log and auto scrolls to the latest entry.
 export default function BattleConsole({ log }) {
   const bottomRef = useRef(null);
 

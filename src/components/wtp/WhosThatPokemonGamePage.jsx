@@ -230,14 +230,14 @@ export default function WhosThatPokemonGamePage({
         </div>
 
         <div style={{ display:'flex', justifyContent:'space-between', gap:'16px', alignItems:'stretch', flexWrap:'wrap' }}>
-          <div style={{ display:'flex', alignItems:'stretch', gap:'16px', flexWrap:'wrap', justifyContent:'flex-start', flex:'1 1 0' }}>
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-start', justifyContent:'center', gap:'6px', padding:'12px 16px', border:`1px solid ${mode.accent}`, background:'rgba(255,255,255,0.02)', minWidth:'240px', flex:'1 1 0' }}>
+          <div className="wtp-info-bar">
+            <div className="wtp-mode-card" style={{ border:`1px solid ${mode.accent}`, background:'rgba(255,255,255,0.02)' }}>
               <span style={{ fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.22em', color:mode.accent }}>Active Mode</span>
               <strong style={{ fontFamily:'var(--font-display)', fontSize:'24px', letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--white)', lineHeight:1 }}>{mode.title}</strong>
               <span style={{ fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.16em', color:'var(--grey-400)' }}>{mode.subtitle}</span>
             </div>
             {mode.key !== 'daily' ? (
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:'16px', padding:'12px 16px', border:'1px solid var(--border-lt)', background:'rgba(255,255,255,0.02)', minWidth:'360px', flex:'1 1 0' }}>
+              <div className="wtp-setup-card" style={{ border:'1px solid var(--border-lt)', background:'rgba(255,255,255,0.02)' }}>
                 <div style={{ display:'flex', flexDirection:'column', gap:'5px' }}>
                   <span style={{ fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--grey-500)' }}>Session Setup</span>
                   <strong style={{ fontFamily:'var(--font-display)', fontSize:'18px', letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--white)' }}>
@@ -331,7 +331,7 @@ export default function WhosThatPokemonGamePage({
           />
         ) : null}
 
-        <div style={{ display:'grid', gridTemplateColumns:showHintPanel ? 'minmax(0, 1.55fr) minmax(280px, 0.9fr)' : '1fr', gap:'18px', alignItems:'start' }}>
+        <div className={showHintPanel ? 'wtp-game-layout' : 'wtp-game-layout-full'}>
           <section style={{ background:'rgba(0,0,0,0.80)', border:'1px solid var(--border)', padding:'24px' }}>
             <div style={{ display:'flex', justifyContent:'space-between', gap:'12px', alignItems:'flex-start', marginBottom:'18px', flexWrap:'wrap' }}>
               <div>

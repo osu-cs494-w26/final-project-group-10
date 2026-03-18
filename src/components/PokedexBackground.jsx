@@ -1,7 +1,9 @@
 /*
- * PokedexBackground.jsx Scrolling Pokémon sprite grid on a single canvas.
- * Redraws on resize so it always fills the screen. Scrolls at 10px/s,
- * throttled to 20fps.
+ * PokedexBackground.jsx Scrolling Pokémon sprite grid rendered on a single
+ * module-level canvas that persists across route changes. Mounts the canvas
+ * into a fixed container on first render and re-uses it on subsequent mounts.
+ * Sprites run from Bulbasaur to Genesect in sequential order,
+ * filling every cell so the grid loops seamlessly.
  */
 
 import React, { useEffect, useRef, memo } from 'react';
@@ -9,148 +11,192 @@ import React, { useEffect, useRef, memo } from 'react';
 const SPRITE_URL = id =>
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
-const BOX        = 64;
 const FPS_LIMIT  = 20;
 const PX_PER_SEC = 10;
 
-function buildRawIds() {
-  const ids = [];
-  for (let i = 1; i <= 649; i += 3) ids.push(i);
-  return ids;
+// All IDs from 1 to 649 sequential, Bulbasaur through Genesect.
+const ALL_IDS = Array.from({ length: 649 }, (_, i) => i + 1);
+
+/*
+ * Module level singleton state. The canvas and all loaded images live here
+ * so they survive React unmount/remount across route changes.
+ */
+const BG = {
+  container: null,   /* the fixed position host div appended to document.body */
+  canvas:    null,
+  images:    [],     /* Image objects, index matches ALL_IDS */
+  loadedCount: 0,
+  allLoaded: false,
+  animId:    null,
+  state:     { offset: 0, loopH: 1, ready: false, lastTime: 0 },
+  listeners: new Set(), /* components currently mounted — used to know when to stop */
+  resizeTimer: null,
+};
+
+/* Build or rebuild the canvas grid to exactly fill the current viewport. */
+function rebuildCanvas() {
+  if (!BG.canvas || !BG.allLoaded) return;
+
+  const vw   = window.innerWidth;
+  const vh   = window.innerHeight;
+
+  /* Compute box size so columns divide evenly into the viewport width.
+     Start from a target of 64px and nudge to the nearest whole divisor. */
+  const targetBox = 64;
+  const cols      = Math.round(vw / targetBox);
+  const BOX       = Math.floor(vw / cols);
+
+  /* Pad the ID list so it fills a whole number of rows. */
+  const rem  = ALL_IDS.length % cols;
+  const ids  = rem === 0 ? ALL_IDS : [...ALL_IDS, ...ALL_IDS.slice(0, cols - rem)];
+  const rows = ids.length / cols;
+  const W    = cols * BOX;
+  const H    = rows * BOX;
+
+  /* Canvas must be tall enough that one full scroll loop never shows a gap. */
+  const passCount = Math.ceil((vh * 2) / H) + 1;
+
+  BG.canvas.width  = W;
+  BG.canvas.height = H * passCount;
+
+  BG.state.loopH  = H;
+  BG.state.offset = BG.state.offset % H;
+  BG.state.ready  = false;
+
+  const ctx = BG.canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  function drawPass(yOffset) {
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, yOffset, W, H);
+    ids.forEach((id, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx  = col * BOX;
+      const cy  = yOffset + row * BOX;
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth   = 1;
+      ctx.strokeRect(cx + 0.5, cy + 0.5, BOX - 1, BOX - 1);
+      const img = BG.images[id - 1]; /* images are 0-indexed, IDs are 1-indexed */
+      if (img?.complete && img.naturalWidth > 0) {
+        const pad = (BOX - Math.min(BOX - 4, 48)) / 2;
+        const sz  = BOX - pad * 2;
+        ctx.drawImage(img, cx + pad, cy + pad, sz, sz);
+      }
+    });
+  }
+
+  for (let p = 0; p < passCount; p++) drawPass(p * H);
+  BG.state.ready = true;
 }
-const RAW_IDS = buildRawIds();
 
-const PokedexBackground = memo(function PokedexBackground() {
-  const canvasRef   = useRef(null);
-  const animRef     = useRef(null);
-  const imagesRef   = useRef([]);
-  const loadedRef   = useRef(false);
-  const stateRef    = useRef({ offset: 0, loopH: 1, ready: false, lastTime: 0 });
+/* Start the RAF animation loop if it isn't already running. */
+function startLoop() {
+  if (BG.animId !== null) return;
+  const frameMs = 1000 / FPS_LIMIT;
+  function animate(now) {
+    BG.animId = requestAnimationFrame(animate);
+    const s = BG.state;
+    if (!s.ready || s.loopH < 1) return;
+    const elapsed = now - s.lastTime;
+    if (elapsed < frameMs) return;
+    s.offset   = (s.offset + (elapsed / 1000) * PX_PER_SEC) % s.loopH;
+    s.lastTime = now - (elapsed % frameMs);
+    if (BG.canvas) BG.canvas.style.transform = `translateY(-${s.offset.toFixed(2)}px)`;
+  }
+  BG.animId = requestAnimationFrame(animate);
+}
 
-  /* rebuildCanvas is defined outside useEffect and stored in a ref
-     so the resize listener always calls the latest version */
-  const rebuildRef = useRef(null);
-  rebuildRef.current = function rebuildCanvas() {
-    const canvas = canvasRef.current;
-    if (!canvas || !loadedRef.current) return;
+/* Stop the RAF loop. */
+function stopLoop() {
+  if (BG.animId !== null) { cancelAnimationFrame(BG.animId); BG.animId = null; }
+}
 
-    const vw    = window.innerWidth;
-    const vh    = window.innerHeight;
-    const cols  = Math.ceil(vw / BOX);
-    const rem   = RAW_IDS.length % cols;
-    const ids   = rem === 0 ? RAW_IDS : [...RAW_IDS, ...RAW_IDS.slice(0, cols - rem)];
-    const rows  = ids.length / cols;
-    const W     = cols * BOX;
-    const H     = rows * BOX;
+/* Initialise the singleton on first use — creates container, canvas, loads images. */
+function initSingleton(onReady) {
+  if (BG.container) {
+    /* Already initialised — just call onReady if images are loaded. */
+    if (BG.allLoaded) onReady();
+    else BG._pendingCallbacks = [...(BG._pendingCallbacks || []), onReady];
+    return;
+  }
 
-    /* Canvas must be at least 2× viewport height so the loop never shows a gap.
-       We draw the sprite grid twice: if H < vh we tile extra copies to fill. */
-    const passCount = Math.ceil((vh * 2) / H) + 1;
-    const totalH    = H * passCount;
+  /* Create the fixed host div and canvas once. */
+  BG.container = document.createElement('div');
+  Object.assign(BG.container.style, {
+    position: 'fixed', inset: '0', zIndex: '0',
+    overflow: 'hidden', pointerEvents: 'none', background: '#000',
+  });
+  BG.canvas = document.createElement('canvas');
+  BG.canvas.style.cssText = 'display:block;will-change:transform;';
 
-    canvas.width  = W;
-    canvas.height = totalH;
+  /* Dark overlay */
+  const overlay = document.createElement('div');
+  Object.assign(overlay.style, {
+    position: 'absolute', inset: '0', background: 'rgba(0,0,0,0.82)',
+  });
 
-    /* Update loop height and clamp offset */
-    stateRef.current.loopH  = H;
-    stateRef.current.offset = stateRef.current.offset % H;
-    stateRef.current.ready  = false;
+  BG.container.appendChild(BG.canvas);
+  BG.container.appendChild(overlay);
+  document.body.appendChild(BG.container);
 
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
+  BG._pendingCallbacks = [onReady];
 
-    /* Draw one pass of the sprite grid at yOffset */
-    function drawPass(yOffset) {
-      ctx.fillStyle = '#0a0a0a';
-      ctx.fillRect(0, yOffset, W, H);
-      ids.forEach((id, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        const cx  = col * BOX;
-        const cy  = yOffset + row * BOX;
-        ctx.strokeStyle = '#1a1a1a';
-        ctx.lineWidth   = 1;
-        ctx.strokeRect(cx + 0.5, cy + 0.5, BOX - 1, BOX - 1);
-        const imgIdx = RAW_IDS.indexOf(id);
-        const img    = imgIdx >= 0 ? imagesRef.current[imgIdx] : null;
-        if (img?.complete && img.naturalWidth > 0) {
-          const pad = (BOX - 48) / 2;
-          ctx.drawImage(img, cx + pad, cy + pad, 48, 48);
-        }
-      });
-    }
+  /* Load all sprites. */
+  BG.images = ALL_IDS.map((id, idx) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = SPRITE_URL(id);
+    const onDone = () => {
+      BG.loadedCount++;
+      if (BG.loadedCount === ALL_IDS.length) {
+        BG.allLoaded = true;
+        rebuildCanvas();
+        startLoop();
+        (BG._pendingCallbacks || []).forEach(cb => cb());
+        BG._pendingCallbacks = [];
+      }
+    };
+    img.onload  = onDone;
+    img.onerror = onDone;
+    return img;
+  });
 
-    /* Fill the canvas height with as many passes as needed */
-    for (let p = 0; p < passCount; p++) drawPass(p * H);
+  /* Debounced resize handler. */
+  window.addEventListener('resize', () => {
+    clearTimeout(BG.resizeTimer);
+    BG.resizeTimer = setTimeout(rebuildCanvas, 200);
+  });
+}
 
-    stateRef.current.ready = true;
-  };
+const PokedexBackground = memo(function PokedexBackground({ onReady }) {
+  const hostRef = useRef(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    BG.listeners.add(hostRef);
 
-    /* Load all images once */
-    let loaded = 0;
-    imagesRef.current = RAW_IDS.map(id => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = SPRITE_URL(id);
-      const onDone = () => {
-        loaded++;
-        if (loaded === RAW_IDS.length) {
-          loadedRef.current = true;
-          rebuildRef.current();
-        }
-      };
-      img.onload  = onDone;
-      img.onerror = onDone;
-      return img;
+    initSingleton(() => {
+      if (onReady) onReady();
     });
 
-    /* Animation loop */
-    const frameMs = 1000 / FPS_LIMIT;
-    function animate(now) {
-      animRef.current = requestAnimationFrame(animate);
-      const s = stateRef.current;
-      if (!s.ready || s.loopH < 1) return;
-      const elapsed = now - s.lastTime;
-      if (elapsed < frameMs) return;
-      s.offset   = (s.offset + (elapsed / 1000) * PX_PER_SEC) % s.loopH;
-      s.lastTime = now - (elapsed % frameMs);
-      canvas.style.transform = `translateY(-${s.offset.toFixed(2)}px)`;
+    /* Move the singleton container to be a child of this component's host
+       so it visually participates in the correct stacking context. */
+    if (BG.container && hostRef.current && !hostRef.current.contains(BG.container)) {
+      hostRef.current.appendChild(BG.container);
     }
-    animRef.current = requestAnimationFrame(animate);
 
-    /* Debounced resize: redraws canvas at new viewport size */
-    let resizeTimer;
-    const onResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => rebuildRef.current(), 200);
-    };
-    window.addEventListener('resize', onResize);
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(animRef.current);
-      clearTimeout(resizeTimer);
-      window.removeEventListener('resize', onResize);
-      imagesRef.current.forEach(img => { img.onload = null; img.onerror = null; });
+      BG.listeners.delete(hostRef);
+      /* Move container back to body on unmount so it persists for next mount. */
+      if (BG.container && !document.body.contains(BG.container)) {
+        document.body.appendChild(BG.container);
+      }
     };
   }, []);
 
-  return (
-    <div style={{
-      position:      'fixed',
-      inset:         0,
-      zIndex:        0,
-      overflow:      'hidden',
-      pointerEvents: 'none',
-      background:    '#000',
-    }}>
-      <canvas ref={canvasRef} style={{ display:'block', willChange:'transform' }} />
-      <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.82)' }} />
-    </div>
-  );
+  return <div ref={hostRef} style={{ position:'fixed', inset:0, zIndex:0, pointerEvents:'none' }} />;
 });
 
 export default PokedexBackground;

@@ -42,13 +42,6 @@ export function registerIceMoves() {
   registerMove('glaciate', {
     secondary: { stat: 'spd', stages: -1, target: 'foe', chance: 100 },
   });
-  MOVE_EFFECTS['hail'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.weather = { type: 'hail', turns: 5 };
-      ctx.log.push('It started to hail!');
-    },
-  };
   MOVE_EFFECTS['haze'] = {
     operational: true, power: null,
     onUse: (ctx) => {
@@ -103,14 +96,6 @@ export function registerIceMoves() {
   registerMove('icy wind', {
     secondary: { stat: 'spd', stages: -1, target: 'foe', chance: 100 },
   });
-  MOVE_EFFECTS['mist'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (!ctx.attackerSide) ctx.attackerSide = {};
-      ctx.attackerSide.mist = 5;
-      ctx.log.push(`${ctx.attacker.name}'s team is shrouded in mist! Stats won't be lowered!`);
-    },
-  };
   registerMove('powder snow', {
     onHit: (ctx) => secondaryStatus(ctx, 'frz', 10),
   });

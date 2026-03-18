@@ -1,6 +1,6 @@
 /**
  * PokemonQuizPage.jsx
- * 10-question Pokémon trivia quiz.
+ * 10 question Pokémon trivia quiz.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -8,18 +8,9 @@ import { pokemonQuizBank } from '../data/pokemonQuizQuestions';
 
 const S = {
   wrap: {
-    position: 'relative',
-    zIndex: 1,
-    minHeight: 'calc(100vh - var(--nav-h))',
-    padding: '2rem',
+    position: 'relative', zIndex: 1,
   },
-  container: {
-    maxWidth: '700px',
-    margin: '0 auto',
-    background: 'var(--grey-900)',
-    border: '1px solid var(--border)',
-    padding: '2rem',
-  },
+  container: {},
   title: {
     fontFamily: 'var(--font-display)',
     fontSize: '24px',
@@ -151,8 +142,16 @@ export default function PokemonQuizPage({ setPage, setPokemonQuizResult }) {
   const progress = `${currentIndex + 1} / ${questions.length}`;
 
   return (
-    <div style={S.wrap}>
-      <div style={S.container}>
+    <div className="quiz-sub-wrap" style={S.wrap}>
+      <div className="quiz-sub-container" style={S.container}>
+      <button
+        onClick={() => setPage('quiz')}
+        style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 24px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'14px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start', marginBottom:'1.5rem', display:'block' }}
+        onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.1)'}
+        onMouseLeave={e => e.currentTarget.style.background='none'}
+      >
+        ← Back to Quizzes
+      </button>
         <div style={S.title}>Pokémon Quiz</div>
         <div style={S.progress}>Question {progress}</div>
         <div style={S.question}>{currentQ.question}</div>

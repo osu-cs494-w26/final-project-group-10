@@ -90,13 +90,7 @@ export default function PokedexInfo({ pokemon, setSelectedPokemon, setPage }) {
     const evoChain = useEvolutionChain(pokemon.name);
 
     return (
-        <div style={{
-            marginTop: '24px',
-            width: '580px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-        }}>
+        <div className="pokedex-info-wrap">
             {/* Base stats prt */}
             <div style={{
                 background: 'var(--grey-800)',
@@ -237,7 +231,6 @@ export default function PokedexInfo({ pokemon, setSelectedPokemon, setPage }) {
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setSelectedPokemon(member.name)
-                                        setPage(`pokedex/${member.name}`)
                                     }}
                                     style={{
                                         display: 'flex',

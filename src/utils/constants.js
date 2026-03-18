@@ -156,28 +156,6 @@ export const GEN5_POKEMON = [
   'reshiram','zekrom','landorus-incarnate','kyurem','keldeo-ordinary','meloetta-aria','genesect',
 ];
 
-/* Held items available in the team builder */
-export const ITEMS = [
-  { name: 'Leftovers',    desc: 'Restores 1/16 HP each turn',                   },
-  { name: 'Life Orb',     desc: 'Boosts moves 30%, but costs HP',               },
-  { name: 'Choice Scarf', desc: 'Boosts Speed 1.5×, locks into one move',       },
-  { name: 'Choice Band',  desc: 'Boosts Attack 1.5×, locks into one move',      },
-  { name: 'Choice Specs', desc: 'Boosts Sp.Atk 1.5×, locks into one move',      },
-  { name: 'Rocky Helmet', desc: 'Damages attacker on contact',                  },
-  { name: 'Eviolite',     desc: 'Boosts defenses of unevolved Pokémon',         },
-  { name: 'Assault Vest', desc: 'Boosts Sp.Def 1.5×, no status moves',          },
-  { name: 'Focus Sash',   desc: 'Survive one KO hit with 1 HP',                 },
-  { name: 'Black Sludge', desc: 'Heals Poison types, damages others',           },
-  { name: 'Lum Berry',    desc: 'Cures any status condition once',              },
-  { name: 'Sitrus Berry', desc: 'Restores 1/4 HP when below 50%',               },
-  { name: 'Shell Bell',   desc: 'Restores 1/8 of damage dealt',                 },
-  { name: 'Expert Belt',  desc: 'Boosts super-effective moves by 20%',          },
-  { name: 'Wise Glasses', desc: 'Boosts Sp.Atk moves by 10%',                   },
-  { name: 'Muscle Band',  desc: 'Boosts physical moves by 10%',                 },
-  { name: 'Air Balloon',  desc: 'Holder is immune to Ground moves until hit',   },
-  { name: 'Safety Goggles',desc:'Protects from weather and powder moves',       },
-];
-
 export const TYPE_SPRITE_IDS = {
     normal: 1,
     fighting: 2,

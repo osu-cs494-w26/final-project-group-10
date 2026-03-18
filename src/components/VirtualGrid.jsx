@@ -1,5 +1,5 @@
 /*
- * VirtualGrid.jsx Virtualised 2-column Pokémon card grid.
+ * VirtualGrid.jsx Virtualised 2 column Pokémon card grid.
  * Only renders rows visible in the scroll window plus an overscan buffer
  * above and below. Cuts mounted PokemonCard count from roughly 300 to 16.
  * Uses a ResizeObserver to track container height so the visible window

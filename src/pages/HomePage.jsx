@@ -57,7 +57,7 @@ export default function HomePage({ setPage }) {
       </div>
 
       {/* Main content box: full width on mobile, capped at 1100px on desktop */}
-      <div className="page-content-box" style={{
+      <div className="page-content-box home-main-gap" style={{
         background:'#000',
         border:'1px solid var(--border)',
         position:'relative', zIndex:2,

@@ -1,6 +1,6 @@
 /*
  * SelectPage.jsx Pokémon picker used before a custom battle.
- * Bulk-loads all Gen 1–5 Pokémon, supports drag-and-drop and click-to-add.
+ * Bulk loads all Gen 1–5 Pokémon.
  *
  * PokemonCard is imported from components/PokemonCard.jsx (shared with SaveTeamPage).
  */
@@ -13,8 +13,8 @@ import PokemonCard    from '../components/PokemonCard.jsx';
 import { ALL_MOVES, getOperationalMoves } from '../utils/moveEffects.js';
 
 
-// pokeCache in usePokemonData is module-level, so this only ever hits the API once
-// per session. The cache is module-level so it persists across page visits.
+// pokeCache in usePokemonData is module level, so this only ever hits the API once
+// per session. The cache is module level so it persists across page visits.
 const _bulkLoaded = { done: false, promise: null };
 
 async function bulkLoadAll(names, onProgress) {
@@ -22,7 +22,7 @@ async function bulkLoadAll(names, onProgress) {
   if (_bulkLoaded.promise) { await _bulkLoaded.promise; onProgress(1); return; }
 
   _bulkLoaded.promise = (async () => {
-    const CONCURRENCY = 8; // stay well within PokeAPI rate limits
+    const CONCURRENCY = 8; 
     let completed = 0;
     const total = names.length;
 
