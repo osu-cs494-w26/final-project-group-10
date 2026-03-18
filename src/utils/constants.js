@@ -177,3 +177,24 @@ export const ITEMS = [
   { name: 'Air Balloon',  desc: 'Holder is immune to Ground moves until hit',   },
   { name: 'Safety Goggles',desc:'Protects from weather and powder moves',       },
 ];
+
+export const TYPE_SPRITE_IDS = {
+    normal: 1,
+    fighting: 2,
+    flying: 3,
+    poison: 4,
+    ground: 5,
+    rock: 6,
+    bug: 7,
+    ghost: 8,
+    steel: 9,
+    fire: 10,
+    water: 11,
+    grass: 12,
+    electric: 13,
+    psychic: 14,
+    ice: 15,
+    dragon: 16,
+    dark: 17,
+    fairy: 18
+};

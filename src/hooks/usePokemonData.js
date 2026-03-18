@@ -1,6 +1,7 @@
 /*
  * usePokemonData.js Module-level cache and React hook for Pokémon and move data.
  * fetchPokeData / fetchMoveData hit PokeAPI once then serve from cache forever.
+ * Now uses animated sprites from Generation V as the primary sprite.
  */
 
 import { useState, useCallback, useRef } from 'react';
@@ -18,7 +19,7 @@ export async function fetchPokeData(name) {
   if (name.startsWith('testmon')) {
     const entry = {
       id: 0, name,
-      sprite:     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png',
+      sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png', // static fallback
       spriteBack: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/132.png',
       types: ['normal'], abilities: [],
       stats: [
@@ -51,12 +52,17 @@ export async function fetchPokeData(name) {
   const entry = {
     id:           data.id,
     name:         data.name,
-    sprite:     data.sprites.front_default,
-    spriteBack: data.sprites.back_default,
+    sprite:       primarySprite, // This will be animated if available
+    spriteBack:   data.sprites.back_default,
     types:        data.types.map(t => t.type.name),
     stats:        data.stats.map(s => ({ name: s.stat.name, value: s.base_stat })),
     moves:        data.moves.map(m => m.move.name.replace(/-/g, ' ')),
     abilities,
+    // Keep these for reference if needed
+    animatedSprite,
+    staticSprite,
+    height:       data.height,   
+    weight:       data.weight
   };
   pokeCache[name] = entry;
   return entry;
@@ -136,13 +142,21 @@ export function usePokemonData() {
     data.moves.slice(0, 120).forEach(m => fetchMoveData(m));
     bumpTick();
     return data;
-  }, [bumpTick]);
+  }, []);
 
-  // Signals that bulk load is done so components re-read from pokeCache.
-  const batchRegisterAll = useCallback(() => {
-    bumpTick();
-  }, [bumpTick]);
+  // Push all globally-cached pokemon into React state in one batch
+  const batchRegisterAll = useCallback((names) => {
+    setSprites(prev => {
+      const newSprites = { ...prev };
+      names.forEach(n => { if (pokeCache[n]) newSprites[n] = pokeCache[n].sprite; });
+      return newSprites;
+    });
+    setPokeData(prev => {
+      const newData = { ...prev };
+      names.forEach(n => { if (pokeCache[n]) newData[n] = pokeCache[n]; });
+      return newData;
+    });
+  }, []);
 
-  // pokeData is a direct view into pokeCache with no React state copy.
-  return { pokeData: pokeCache, sprites: pokeCache, fetchBasic, prefetchFull, batchRegisterAll };
+  return { sprites, pokeData, fetchBasic, prefetchFull, batchRegisterAll };
 }

@@ -29,6 +29,36 @@ function AppShell({ user, signOut }) {
   const [battleMode,    setBattleMode]    = useState('custom');
   // Holds the active trainer battle teams and label once a fight is confirmed.
   const [trainerBattle, setTrainerBattle] = useState(null);
+  const [quizResult,   setQuizResult]   = useState(null); 
+  const [pokemonQuizResult, setPokemonQuizResult] = useState(null);
+  const [evolutionQuizResult, setEvolutionQuizResult] = useState(null);
+  const [wtpSession, setWtpSession] = useState({ modeKey: null, config: null });
+  const [wtpPokedexTarget, setWtpPokedexTarget] = useState(null);
+  const skipNextScrollResetRef = React.useRef(false);
+
+  useEffect(() => {
+    if (wtpPokedexTarget) {
+      console.info('Pending Pokédex handoff from WTP:', wtpPokedexTarget);
+    }
+  }, [wtpPokedexTarget]);
+
+  useLayoutEffect(() => {
+    if (skipNextScrollResetRef.current) {
+      skipNextScrollResetRef.current = false;
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [page]);
+
+  const setPagePreserveScroll = (nextPage) => {
+    skipNextScrollResetRef.current = true;
+    setPage(nextPage);
+  };
+
+
+
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
 
   // Derives the current path for background and nav highlight logic.
   const path = location.pathname;

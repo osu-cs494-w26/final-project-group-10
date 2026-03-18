@@ -113,6 +113,34 @@ function PartySlot({ pokemon, idx, isSelected, onClick, onDrop, onRemove, dragOv
 /* Main builder: Pokémon grid on the left, party slots on the right. */
 export default function SaveTeamPage({ setPage, user }) {
   const [team,            setTeam]            = useState([]);
+function PokemonCard({ name, pokeData, teamFull, isDragging, isSelected, onDragStart, onDragEnd, onClick, onAdd }) {
+  const data  = pokeData[name];
+  const type1 = data?.types?.[0];
+  const type2 = data?.types?.[1];
+  const id    = ALL_POKEMON.indexOf(name) + 1;
+  const accent = type1 ? (TYPE_COLORS[type1] || '#888') : 'var(--border)';
+  const cardBg = type1 ? TYPE_BG[type1] : 'var(--grey-900)';
+
+  return (
+    <div draggable={!isDragging && !teamFull} onDragStart={e => { e.dataTransfer.effectAllowed='move'; onDragStart(name); }} onDragEnd={onDragEnd} onClick={onClick}
+      style={{ background:cardBg, borderTop:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderRight:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderBottom:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderLeft:`4px solid ${isSelected ? '#4ade80' : accent}`, padding:'14px 12px', cursor:'pointer', opacity: isDragging ? 0.4 : 1, display:'flex', flexDirection:'column', alignItems:'center', gap:'8px', minHeight:'180px', transition:'opacity 0.15s, filter 0.15s, border-color 0.1s', userSelect:'none', boxShadow: isSelected ? '0 0 12px rgba(74,222,128,0.3)' : 'none', position:'relative' }}
+      onMouseEnter={e=>{ if(!teamFull && !isDragging) e.currentTarget.style.filter='brightness(1.25)'; }}
+      onMouseLeave={e=>{ e.currentTarget.style.filter='none'; }}>
+      <span style={{ position:'absolute', top:'7px', right:'9px', fontFamily:'var(--font-mono)', fontSize:'10px', color:accent, opacity:0.7 }}>#{id}</span>
+      {data?.sprite ? <img src={data.sprite} alt={name} style={{ width:'96px', height:'96px', imageRendering:'pixelated' }} /> : <div style={{ width:'96px', height:'96px', background:'var(--grey-700)', opacity:0.4 }} />}
+      <div style={{ fontFamily:'var(--font-display)', fontSize:'13px', textTransform:'uppercase', letterSpacing:'0.06em', color:'var(--white)', textAlign:'center', lineHeight:1.2 }}>{name.replace(/-/g,' ')}</div>
+      <div style={{ display:'flex', gap:'5px', flexWrap:'wrap', justifyContent:'center' }}>
+        {type1 && <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', color:TYPE_COLORS[type1]||'#888', letterSpacing:'0.06em', border:`1px solid ${TYPE_COLORS[type1]||'#888'}`, padding:'1px 6px', background:`${TYPE_BG[type1]||'#222'}` }}>{type1}</span>}
+        {type2 && <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', color:TYPE_COLORS[type2]||'#888', letterSpacing:'0.06em', border:`1px solid ${TYPE_COLORS[type2]||'#888'}`, padding:'1px 6px', background:`${TYPE_BG[type2]||'#222'}` }}>{type2}</span>}
+      </div>
+      <button onClick={e=>{ e.stopPropagation(); onAdd && onAdd(); }} disabled={teamFull} style={{ width:'100%', background:'none', border:'1px solid var(--white)', color:'var(--white)', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase', padding:'5px 0', marginTop:'2px', transition:'all 0.1s', opacity: teamFull ? 0.3 : 1 }} onMouseEnter={e=>{ if(!teamFull) e.currentTarget.style.background='rgba(255,255,255,0.12)'; }} onMouseLeave={e=>e.currentTarget.style.background='none'}>Add</button>
+    </div>
+  );
+}
+
+// Main builder: Pokémon grid on the left, party slots on the right.
+export default function SaveTeamPage({ setPage, user, initialTeam }) {
+  const [team,            setTeam]            = useState(initialTeam || []); // Initialize with passed team
   const [search,          setSearch]          = useState('');
   const [filterType,      setFilterType]      = useState('all');
   const [customizeTarget, setCustomizeTarget] = useState(null);
@@ -159,12 +187,22 @@ export default function SaveTeamPage({ setPage, user }) {
     bulkLoadAll(ALL_POKEMON, p => setLoadProgress(p)).then(() => { batchRegisterAll(); setAllLoaded(true); });
   }, []);
 
+  // Fetch missing cachedData for team members
   useEffect(() => {
     team.forEach(p => { if (!p.cachedData && !pokeData[p.name]) fetchBasic(p.name); });
   }, [team]);
 
   /* Memoized filtered list so typing/clicking doesn't recompute 600 items every render */
   const filtered = React.useMemo(() => ALL_POKEMON.filter(n => {
+  // ===== FIX: Automatically populate team from initialTeam =====
+  // This ensures that when we arrive from the quiz, the team is already in the party slots
+  useEffect(() => {
+    if (initialTeam && initialTeam.length > 0) {
+      setTeam(initialTeam);
+    }
+  }, [initialTeam]);
+
+  const filtered = ALL_POKEMON.filter(n => {
     if (teamNames.has(n)) return false;
     if (!n.replace(/-/g,' ').toLowerCase().includes(search.toLowerCase().trim())) return false;
     if (n === 'testmon') return filterType === 'all' || filterType === 'normal';
