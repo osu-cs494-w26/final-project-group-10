@@ -7,9 +7,13 @@ This is a fullstack Pokémon web app built with React and Vite. You can browse t
 **Pokédex** Interactive list of Pokémon up to 6th generation with following features:
 
 Filters - allows you to filter list based on name, type, lowest-highest, highest-lowest, A-Z, Z-A
+
 Cry Sound Button - hear the sound of selected Pokémon
+
 Stats Bar - allows you to visualize base stats of Pokémon (including HP, Attack, Defense, etc)
+
 Abilites List - see detailed descriptions for Pokémon abilities, including hidden ones
+
 Height Comparison - enter your height to see how big (or small) Pokémon are compared to you
 
 **Battle System** Turnbased battles using the official Gen 5 damage formula. Supports three modes:
