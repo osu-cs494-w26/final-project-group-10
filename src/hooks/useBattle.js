@@ -1,7 +1,7 @@
 /*
  * useBattle.js React hook that drives the battle state machine.
  * computeTurn() returns an AnimStep array that BattlePage plays frame by frame.
- * Fully side-agnostic: supports 1P-vs-AI 
+ * Fully side agnostic: supports 1P vs AI 
  */
 
 import { useState, useRef, useCallback } from 'react';
@@ -36,7 +36,7 @@ export function useBattle() {
     log:          [],
   });
 
-  const mdc       = useRef({});   // moveDataMap
+  const mdc       = useRef({});   
   const [snap,    setSnap]    = useState(null);
   const [phase,   setPhase]   = useState('idle');
   const [winner,  setWinner]  = useState(null);
@@ -421,7 +421,7 @@ const computeTurn = useCallback((moveNamesInput, isSwitchTurn = false) => {
   }, []);
 
   // Synchronous snapshot
-  // Returns a deep-cloned snapshot of current battle state for rendering.
+  // Returns a deep cloned snapshot of current battle state for rendering.
 const getSnap = useCallback(() => {
     const s = stateRef.current;
     return {
