@@ -21,7 +21,7 @@ function SkeletonCard() {
   );
 }
 
-export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPage }) {
+export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPage, setWtpPokedexTarget, wtpPokedexTarget }) {
   const { pokeData, fetchBasic, prefetchFull } = usePokemonData();
   const pokemon = [...GEN1_POKEMON, ...GEN2_POKEMON, ...GEN3_POKEMON, ...GEN4_POKEMON, ...GEN5_POKEMON];
   const [displayLimit, setDisplayLimit] = useState(24);
@@ -35,6 +35,13 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
   useEffect(() => {
     if (selectedPokemon) prefetchFull(selectedPokemon);
   }, [selectedPokemon, prefetchFull]);
+
+  useEffect(() => {
+    if(wtpPokedexTarget) {
+        setSelectedPokemon(wtpPokedexTarget)
+        setWtpPokedexTarget(null);
+    }
+  }, [wtpPokedexTarget]);
 
   
   useEffect(() => {
@@ -177,7 +184,7 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
             );
           })}
           {filteredPokemon.length === 0 && (
-            <div style={{ color:'var(--grey-400)', padding:'20px', textAlign:'center' }}>
+            <div style={{ color:'var(--grey-400)', padding:'20px', textAlign:'center', gridColumn: '1 / -1'}}>
               No Pokémon found.
             </div>
           )}
@@ -192,7 +199,7 @@ export default function PokedexPage({ selectedPokemon, setSelectedPokemon, setPa
           ref={overlayRef}
           style={{ position:'fixed', top:0, left:0, right:0, bottom:0, backgroundColor:'rgba(0,0,0,0.7)', overflowY:'auto', zIndex:100 }}
         >
-          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'40px 20px 80px', minHeight:'100%' }}>
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'center',  padding:'calc(var(--nav-h) + 40px) 20px 80px', minHeight:'100%' }}>
             <Pokedex
               setPage={setPage}
               selectedPokemon={pokeData[selectedPokemon]}

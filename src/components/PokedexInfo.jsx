@@ -237,7 +237,6 @@ export default function PokedexInfo({ pokemon, setSelectedPokemon, setPage }) {
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setSelectedPokemon(member.name)
-                                        setPage(`pokedex/${member.name}`)
                                     }}
                                     style={{
                                         display: 'flex',

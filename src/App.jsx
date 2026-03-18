@@ -132,6 +132,8 @@ function AppShell({ user, signOut }) {
             selectedPokemon={selectedPokemon}
             setSelectedPokemon={setSelectedPokemon}
             setPage={setPage}
+            wtpPokedexTarget={wtpPokedexTarget}
+            setWtpPokedexTarget={setWtpPokedexTarget}
           />
         } />
 
