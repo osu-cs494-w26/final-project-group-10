@@ -28,7 +28,7 @@ function PartyStrip({ members, accent }) {
   const [sprites, setSprites] = useState({});
   useEffect(() => {
     members.forEach(m => {
-      fetchPokeData(m.name).then(d => setSprites(p => ({ ...p, [m.name]: d.sprite }))).catch(() => {});
+      fetchPokeData(m.name).then(d => setSprites(p => ({ ...p, [m.name]: d.staticSprite || d.sprite }))).catch(() => {});
     });
   }, [members.map(m => m.name).join(',')]);
 

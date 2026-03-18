@@ -8,8 +8,9 @@ import { pokemonQuizBank } from '../data/pokemonQuizQuestions';
 
 const S = {
   wrap: {
+    position: 'relative',
+    zIndex: 1,
     minHeight: 'calc(100vh - var(--nav-h))',
-    background: 'var(--black)',
     padding: '2rem',
   },
   container: {

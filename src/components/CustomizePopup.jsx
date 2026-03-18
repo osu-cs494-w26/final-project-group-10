@@ -158,7 +158,7 @@ export default function CustomizePopup({ pokemon, onClose, onSave }) {
   const abilityList = cached?.abilities || [];
   const stats       = cached?.stats     || [];
   const types       = cached?.types     || [];
-  const sprite      = cached?.sprite    || null;
+  const sprite      = cached?.staticSprite || cached?.sprite    || null;
 
   // Stat panel used in both the mobile and desktop layouts.
   const StatPanel = (

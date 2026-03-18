@@ -29,7 +29,7 @@ function PartyStrip({ members, accentColor }) {
     const unique = [...new Set(members.map(m => m.name))];
     unique.forEach(name => {
       fetchPokeData(name).then(d => {
-        setSprites(prev => ({ ...prev, [name]: d.sprite }));
+        setSprites(prev => ({ ...prev, [name]: d.staticSprite || d.sprite }));
       }).catch(() => {});
     });
   }, [members.map(m => m.name).join(',')]);

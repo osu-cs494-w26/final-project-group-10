@@ -101,7 +101,7 @@ function PartySlot({ pokemon, idx, isSelected, onClick, onDrop, onRemove, dragOv
       {filled ? (
         <>
           {pokemon.cachedData?.sprite
-            ? <img src={pokemon.cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated', flexShrink:0 }} />
+            ? <img src={pokemon.cachedData.staticSprite || cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated', flexShrink:0 }} />
             : <div style={{ width:'40px', height:'40px', background:'var(--grey-700)', flexShrink:0 }} />
           }
           <div style={{ flex:1, minWidth:0 }}>

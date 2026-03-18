@@ -640,7 +640,7 @@ export function buildBattler(pokemon, data) {
   return {
     name:       pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1).replace(/-/g, ' '),
     types:      data?.types || [],
-    sprite:     data?.sprite || null,
+    sprite:     data?.staticSprite || data?.sprite || null,
     spriteBack: data?.spriteBack || null,
     maxHp,
     hp:    maxHp,

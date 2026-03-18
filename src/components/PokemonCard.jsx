@@ -47,7 +47,7 @@ const PokemonCard = memo(function PokemonCard({ name, cardData, isDragging, isSe
       <span style={{ position:'absolute', top:'7px', right:'9px', fontFamily:'var(--font-mono)', fontSize:'10px', color:accent, opacity:0.7 }}>#{id}</span>
 
       {cardData?.sprite
-        ? <img src={cardData.sprite} alt={name} style={{ width:'96px', height:'96px', imageRendering:'pixelated' }} />
+        ? <img src={cardData.staticSprite || cardData.sprite} alt={name} style={{ width:'96px', height:'96px', imageRendering:'pixelated' }} />
         : <div style={{ width:'96px', height:'96px', background:'var(--grey-700)', opacity:0.4 }} />
       }
 

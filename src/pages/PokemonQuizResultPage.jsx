@@ -7,8 +7,9 @@ import React from 'react';
 
 const S = {
   wrap: {
+    position: 'relative',
+    zIndex: 1,
     minHeight: 'calc(100vh - var(--nav-h))',
-    background: 'var(--black)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
