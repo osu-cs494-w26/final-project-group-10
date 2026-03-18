@@ -85,6 +85,8 @@ export default function MoveTooltip({ moveName, preloaded, children }) {
   const timerRef = useRef(null);
 
   const showAt = useCallback((el) => {
+    /* Tooltips disabled on small screens where hover is unreliable */
+    if (window.innerWidth <= 768) return;
     clearTimeout(timerRef.current);
     const rect   = el.getBoundingClientRect();
     const GAP    = 8;

@@ -29,6 +29,8 @@
   --nav-h: 52px;
 }
 
+/* Breakpoints: sm 480px, md 768px, lg 1024px */
+
 body {
   font-family: var(--font-ui);
   background: var(--black);
@@ -62,3 +64,171 @@ body {
 .animate-shake      { animation: shake 0.4s ease; }
 .animate-flash      { animation: flash 0.3s ease 3; }
 .animate-pulse      { animation: pulse 1.2s ease-in-out infinite; }
+
+/* Responsive grid helpers used across pages */
+.grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.grid-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-5col { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+
+/* Hamburger menu toggle (hidden on desktop) */
+.nav-hamburger { display: none; background: none; border: 1px solid var(--border); color: var(--white); padding: 6px 10px; cursor: pointer; font-size: 18px; line-height: 1; flex-shrink: 0; }
+
+/* Mobile drawer overlay */
+.nav-drawer {
+  display: none;
+  position: fixed; top: var(--nav-h); left: 0; right: 0; bottom: 0;
+  background: var(--grey-900); border-top: 1px solid var(--border);
+  z-index: 99; flex-direction: column; padding: 16px;
+  animation: fadeInFast 0.15s ease both;
+  overflow-y: auto;
+}
+.nav-drawer.open { display: flex; }
+
+/* Full width content box: capped on desktop, edge to edge on mobile */
+.page-content-box { width: 100%; max-width: 1100px; }
+
+/* Home page welcome row (text + pikachu side by side on desktop) */
+.home-welcome-row { display: flex; align-items: flex-end; gap: 0; min-height: 260px; }
+.home-pikachu     { flex-shrink: 0; display: flex; align-items: flex-end; justify-content: center; padding: 0 48px; border-left: 1px solid var(--border); }
+
+/* Three panel battle layout (party | grid | slots) */
+.battle-builder-layout { flex: 1; display: flex; overflow: hidden; }
+.battle-builder-party  { width: 300px; min-width: 300px; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.battle-builder-slots  { width: 260px; min-width: 260px; border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; background: var(--grey-900); }
+
+/* Active battle page: moves + console side by side on desktop */
+.battle-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; height: 200px; flex-shrink: 0; overflow: hidden; gap: 1px; background: var(--border); }
+
+/* Console wrapper: no-op on desktop, hard fixed height on mobile */
+.battle-console-wrap { display: contents; }
+
+/* PokemonCard hover: CSS-only brightness so JS handlers aren't needed on 600+ cards */
+.pokemon-card:hover { filter: brightness(1.25); }
+.pokemon-card:hover button { background: rgba(255,255,255,0.12) !important; }
+
+/* When the team is full, dim the Add buttons via CSS with no prop change needed on cards. */
+.team-full .pokemon-card-add { opacity: 0.3; pointer-events: none; }
+
+/* Battle viewport side decorative panels: shrink proportionally on mid-size screens */
+.battle-side-panel { width: clamp(0px, 15vw, 300px); flex-shrink: 0; background: var(--grey-800); }
+.battle-side-left  { border-right: 2px solid var(--border-lt); }
+.battle-side-right { border-left: 2px solid var(--border-lt); }
+
+/* Battle sprite sizing: scales with viewport */
+.battle-sprite-img         { width: clamp(120px, 18vw, 220px); height: clamp(120px, 18vw, 220px); image-rendering: pixelated; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.9)); display: block; }
+.battle-sprite-placeholder { width: clamp(120px, 18vw, 220px); height: clamp(120px, 18vw, 220px); background: var(--grey-800); }
+
+/* HP bar card in BattleViewport: min-width scales with viewport */
+.battle-hp-card { background: var(--grey-800); border: 1px solid var(--border-mid); padding: clamp(8px, 1.2vw, 14px) clamp(10px, 1.5vw, 18px); min-width: clamp(160px, 22vw, 280px); max-width: 340px; }
+
+/* TeamStatusBar center label */
+.team-status-center { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.15em; color: var(--grey-300); text-transform: uppercase; }
+
+/* Trainer gallery grid: 4 columns on desktop */
+.trainer-gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+/* Party strip in battle: scrollable row */
+.battle-party-strip { background: var(--grey-900); border-top: 1px solid var(--border); padding: 8px 12px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; overflow-x: auto; }
+
+/* Battle viewport: absolute layout on desktop, stacked rows on mobile */
+.battle-viewport-field { flex: 1; position: relative; overflow: hidden; }
+
+/* Mobile stacked battle rows (hidden on desktop) */
+.battle-viewport-mobile { display: none; flex-direction: column; flex: 1; background: var(--grey-900); border: 1px solid var(--border); }
+.battle-viewport-row    { display: flex; align-items: center; gap: 8px; padding: 10px 12px; flex: 1; }
+.battle-viewport-row-ai { border-bottom: 1px solid var(--border); justify-content: flex-end; }
+.battle-viewport-row-pl { justify-content: flex-start; }
+
+/* Back button row */
+.battle-back-row { background: var(--grey-900); border-top: 1px solid var(--border); padding: 6px 12px; display: flex; justify-content: flex-start; }
+
+/* Tablet / mid-size screens: 769px to 1024px (iPad range) */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  /* Shrink HP card fonts so they fit in the narrower field */
+  .battle-hp-card .hp-name    { font-size: 14px !important; }
+  .battle-hp-card .hp-lv      { font-size: 10px !important; }
+  .battle-hp-card .hp-type    { font-size: 9px !important; padding: 1px 5px !important; }
+  .battle-hp-card .hp-spd-val { font-size: 11px !important; }
+  .battle-hp-card .hp-nums    { font-size: 11px !important; }
+
+  /* Viewport height shorter on iPad so content fits without scrolling */
+  .battle-viewport-desktop { height: clamp(220px, 34vw, 360px) !important; }
+}
+
+/* Medium screens: 768px and below */
+@media (max-width: 768px) {
+
+  /* Nav: hide desktop links, show hamburger */
+  .nav-links-desktop { display: none !important; }
+  .nav-hamburger     { display: flex; align-items: center; justify-content: center; }
+
+  /* Page content boxes span full width */
+  .page-content-box { max-width: 100%; }
+
+  /* Home cards: 1 column, full width */
+  .grid-4col { grid-template-columns: 1fr; }
+  .grid-3col { grid-template-columns: 1fr; }
+  .grid-5col { grid-template-columns: repeat(4, 1fr); }
+
+  /* Home welcome row: stack vertically */
+  .home-welcome-row { flex-direction: column; min-height: unset; }
+  .home-pikachu     { border-left: none; border-top: 1px solid var(--border); padding: 16px 0; justify-content: center; }
+
+  /* Builder pages: panels stack vertically */
+  .battle-builder-layout { flex-direction: column; overflow: visible; height: auto; }
+  .battle-builder-party  { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); max-height: 280px; }
+  .battle-builder-slots  { width: 100%; min-width: unset; border-left: none; border-top: 1px solid var(--border); }
+  .builder-page-scroll   { height: auto !important; overflow: visible !important; }
+
+  /* Active battle: moves stack above console on mobile */
+  .battle-bottom-grid { grid-template-columns: 1fr; height: auto; }
+  .battle-bottom-grid > *:first-child { min-height: 160px; }
+  /* Console wrapper gets a hard fixed height on mobile so it never expands */
+  .battle-console-wrap { display: block; height: 140px; flex-shrink: 0; overflow: hidden; }
+
+  /* Hide the desktop absolute-position viewport, show mobile stacked one */
+  .battle-viewport-desktop { display: none !important; }
+  .battle-viewport-mobile  { display: flex; }
+
+  /* HP card in mobile rows: compact padding and smaller fonts */
+  .battle-hp-card { min-width: 0; max-width: none; padding: 6px 8px; flex: 1; }
+  .battle-hp-card .hp-name    { font-size: 13px !important; }
+  .battle-hp-card .hp-lv      { font-size: 10px !important; }
+  .battle-hp-card .hp-type    { font-size: 9px !important; padding: 1px 5px !important; }
+  .battle-hp-card .hp-spd-val { font-size: 11px !important; }
+  .battle-hp-card .hp-bar     { height: 7px !important; }
+  .battle-hp-card .hp-nums    { font-size: 10px !important; }
+
+  /* Sprites larger on mobile to compensate for removed side panels */
+  .battle-sprite-img         { width: 110px; height: 110px; }
+  .battle-sprite-placeholder { width: 110px; height: 110px; }
+
+  /* AI row: HP card left, sprite right */
+  .battle-viewport-row-ai { flex-direction: row; justify-content: flex-start; }
+
+  /* Player row: sprite left, HP card right */
+  .battle-viewport-row-pl { flex-direction: row; justify-content: flex-start; }
+
+  /* TeamStatusBar center title hidden */
+  .team-status-center { display: none; }
+
+  /* Party strip: centre content on mobile */
+  .battle-party-strip { justify-content: center; }
+
+  /* Back button row: centred on mobile */
+  .battle-back-row { justify-content: center; }
+
+  /* Trainer gallery: 2 columns on tablet */
+  .trainer-gallery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Small screens: 480px and below */
+@media (max-width: 480px) {
+  .grid-5col { grid-template-columns: repeat(3, 1fr); }
+  .battle-sprite-img         { width: 72px; height: 72px; }
+  .battle-sprite-placeholder { width: 72px; height: 72px; }
+
+  /* Trainer cards: single column on very small screens */
+  .trainer-gallery-grid { grid-template-columns: 1fr; }
+}

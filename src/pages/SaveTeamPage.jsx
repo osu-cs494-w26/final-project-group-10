@@ -1,14 +1,23 @@
 /*
  * SaveTeamPage.jsx Team builder. Players drag/click Pokémon into
  * party slots, customise them, then save to one of 10 Supabase slots.
+ *
+ * Extracted into their own files:
+ *   SaveSlotPanel  → components/SaveSlotPanel.jsx
+ *   PokemonCard    → components/PokemonCard.jsx
+ *   VirtualGrid    → components/VirtualGrid.jsx
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { GEN1_POKEMON, GEN2_POKEMON, GEN3_POKEMON, GEN4_POKEMON, GEN5_POKEMON, TYPE_COLORS, TYPE_BG} from '../utils/constants.js';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { GEN1_POKEMON, GEN2_POKEMON, GEN3_POKEMON, GEN4_POKEMON, GEN5_POKEMON, TYPE_COLORS, TYPE_BG } from '../utils/constants.js';
 import { usePokemonData, fetchPokeData } from '../hooks/usePokemonData.js';
+import useIsMobile    from '../hooks/useIsMobile.js';
 import CustomizePopup from '../components/CustomizePopup.jsx';
+import SaveSlotPanel  from '../components/SaveSlotPanel.jsx';
+import PokemonCard    from '../components/PokemonCard.jsx';
+import VirtualGrid    from '../components/VirtualGrid.jsx';
 import { ALL_MOVES, getOperationalMoves } from '../utils/moveEffects.js';
-import { supabase } from '../utils/supabaseClient.js';
+import { supabase }   from '../utils/supabaseClient.js';
 
 const _bulkLoaded = { done: false, promise: null };
 async function bulkLoadAll(names, onProgress) {
@@ -36,7 +45,6 @@ async function bulkLoadAll(names, onProgress) {
 const ALL_POKEMON = ['testmon', ...GEN1_POKEMON, ...GEN2_POKEMON, ...GEN3_POKEMON, ...GEN4_POKEMON, ...GEN5_POKEMON];
 const ALL_TYPES   = ['normal','fire','water','grass','electric','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
 
-
 function makeTestMon() {
   return {
     name: 'testmon', id: 0, moves: ALL_MOVES.slice(0, 4), item: null, ability: null, friendship: 255, gender: 'm',
@@ -52,98 +60,16 @@ function makeTestMon() {
   };
 }
 
-// Sidebar listing all 10 save slots with load, overwrite, and delete actions.
-function SaveSlotPanel({ slots, currentTeam, onSave, onLoad, onDelete, saving, teamName, onTeamNameChange }) {
-  const canSave = currentTeam.length === 6;
-  const [confirmDelete, setConfirmDelete] = useState(null);
-
+function MiniPartySlot({ pokemon, idx, isSelected, onClick }) {
+  const type = pokemon?.cachedData?.types?.[0];
+  const bg   = isSelected ? 'rgba(255,255,255,0.12)' : pokemon ? (TYPE_BG[type] || 'var(--grey-800)') : 'var(--grey-900)';
+  const border = isSelected ? '#4ade80' : pokemon ? (TYPE_COLORS[type] || 'var(--border-lt)') : 'var(--border)';
   return (
-    <div style={{ width:'260px', minWidth:'260px', borderLeft:'1px solid var(--border)', display:'flex', flexDirection:'column', flexShrink:0, background:'var(--grey-900)' }}>
-      <div style={{ padding:'12px 16px', borderBottom:'1px solid var(--border)', flexShrink:0 }}>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--grey-400)', marginBottom:'8px' }}>Save Slots</div>
-        {/* Team name input */}
-        <div style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--grey-600)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'4px' }}>Team Name</div>
-        <input
-          value={teamName}
-          onChange={e => onTeamNameChange(e.target.value)}
-          placeholder="My Team"
-          maxLength={24}
-          style={{ width:'100%', background:'var(--grey-800)', border:'1px solid var(--border-mid)', color:'var(--white)', fontFamily:'var(--font-display)', fontSize:'12px', letterSpacing:'0.06em', padding:'6px 8px', outline:'none', textTransform:'uppercase' }}
-          onFocus={e => e.target.style.borderColor = 'var(--border-lt)'}
-          onBlur={e => e.target.style.borderColor = 'var(--border-mid)'}
-        />
-        <div style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color: canSave ? 'var(--grey-500)' : 'var(--grey-700)', marginTop:'6px' }}>
-          {canSave ? '6/6 Pokémon pick a slot to save' : `${currentTeam.length}/6 Pokémon needed`}
-        </div>
-      </div>
-
-      <div style={{ flex:1, overflowY:'auto', padding:'10px 12px', display:'flex', flexDirection:'column', gap:'6px' }}>
-        {Array.from({ length: 10 }, (_, i) => {
-          const slot = slots[i];
-          const hasData = slot && slot.pokemon && slot.pokemon.length > 0;
-          return (
-            <div key={i} style={{ background: hasData ? 'var(--grey-800)' : 'var(--grey-900)', border:'1px solid var(--border)', padding:'10px 12px', display:'flex', flexDirection:'column', gap:'6px' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <span style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--grey-400)', letterSpacing:'0.1em' }}>
-                  SLOT {String(i + 1).padStart(2, '0')}
-                </span>
-                {hasData && (
-                  <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--grey-600)' }}>
-                    {slot.pokemon.length}/6
-                  </span>
-                )}
-              </div>
-
-              {hasData ? (
-                <>
-                  <div style={{ fontFamily:'var(--font-display)', fontSize:'12px', color:'var(--white)', letterSpacing:'0.06em', textTransform:'uppercase', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                    {slot.name || `Team ${i + 1}`}
-                  </div>
-                  <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--grey-500)' }}>
-                    {slot.pokemon.map(p => p.name.replace(/-/g,' ')).join(', ')}
-                  </div>
-                  <div style={{ display:'flex', gap:'5px', marginTop:'2px' }}>
-                    <button onClick={() => onLoad(i)} style={{ flex:1, background:'transparent', border:'1px solid var(--border-lt)', color:'var(--grey-200)', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', letterSpacing:'0.08em', textTransform:'uppercase', padding:'4px 0', transition:'all 0.1s' }}
-                      onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'}
-                      onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                      Load
-                    </button>
-                    <button onClick={() => canSave && onSave(i)} disabled={!canSave || saving} style={{ flex:1, background: canSave ? 'rgba(64,144,208,0.15)' : 'transparent', border:`1px solid ${canSave ? '#4090d0' : 'var(--border)'}`, color: canSave ? '#4090d0' : 'var(--grey-700)', cursor: canSave ? 'pointer' : 'not-allowed', fontFamily:'var(--font-mono)', fontSize:'9px', letterSpacing:'0.08em', textTransform:'uppercase', padding:'4px 0', transition:'all 0.1s' }}
-                      onMouseEnter={e=>{ if(canSave) e.currentTarget.style.background='rgba(64,144,208,0.25)'; }}
-                      onMouseLeave={e=>{ if(canSave) e.currentTarget.style.background='rgba(64,144,208,0.15)'; }}>
-                      {saving ? '…' : 'Overwrite'}
-                    </button>
-                    {confirmDelete === i ? (
-                      <>
-                        <button onClick={() => { onDelete(i); setConfirmDelete(null); }} style={{ flex:1, background:'rgba(200,50,50,0.25)', border:'1px solid #c03030', color:'#ff6060', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', letterSpacing:'0.08em', textTransform:'uppercase', padding:'4px 0', transition:'all 0.1s' }}
-                          onMouseEnter={e=>e.currentTarget.style.background='rgba(200,50,50,0.45)'}
-                          onMouseLeave={e=>e.currentTarget.style.background='rgba(200,50,50,0.25)'}>
-                          Sure?
-                        </button>
-                        <button onClick={() => setConfirmDelete(null)} style={{ background:'transparent', border:'1px solid var(--border)', color:'var(--grey-500)', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', padding:'4px 6px', transition:'all 0.1s' }}
-                          onMouseEnter={e=>e.currentTarget.style.color='var(--white)'}
-                          onMouseLeave={e=>e.currentTarget.style.color='var(--grey-500)'}>
-                          ✕
-                        </button>
-                      </>
-                    ) : (
-                      <button onClick={() => setConfirmDelete(i)} style={{ background:'transparent', border:'1px solid var(--border)', color:'var(--grey-600)', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', letterSpacing:'0.08em', textTransform:'uppercase', padding:'4px 6px', transition:'all 0.1s' }}
-                        onMouseEnter={e=>{ e.currentTarget.style.borderColor='#c03030'; e.currentTarget.style.color='#ff6060'; }}
-                        onMouseLeave={e=>{ e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.color='var(--grey-600)'; }}>
-                        Del
-                      </button>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <button onClick={() => canSave && onSave(i)} disabled={!canSave || saving} style={{ background: canSave ? 'rgba(64,144,208,0.12)' : 'transparent', border:`1px solid ${canSave ? '#4090d0' : 'var(--border)'}`, color: canSave ? '#4090d0' : 'var(--grey-700)', cursor: canSave ? 'pointer' : 'not-allowed', fontFamily:'var(--font-mono)', fontSize:'9px', letterSpacing:'0.08em', textTransform:'uppercase', padding:'5px', transition:'all 0.1s' }}>
-                  {saving ? 'Saving…' : canSave ? '+ Save Here' : 'Empty'}
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
+    <div onClick={onClick} style={{ background:bg, border:`1px solid ${border}`, borderLeft:`3px solid ${border}`, width:'52px', height:'52px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, position:'relative', transition:'all 0.15s' }}>
+      {pokemon?.cachedData?.sprite
+        ? <img src={pokemon.cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated' }} />
+        : <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--grey-600)' }}>{idx + 1}</span>}
+      {isSelected && <div style={{ position:'absolute', inset:0, boxShadow:'0 0 0 2px #4ade80 inset', pointerEvents:'none' }} />}
     </div>
   );
 }
@@ -184,32 +110,7 @@ function PartySlot({ pokemon, idx, isSelected, onClick, onDrop, onRemove, dragOv
   );
 }
 
-function PokemonCard({ name, pokeData, teamFull, isDragging, isSelected, onDragStart, onDragEnd, onClick, onAdd }) {
-  const data  = pokeData[name];
-  const type1 = data?.types?.[0];
-  const type2 = data?.types?.[1];
-  const id    = ALL_POKEMON.indexOf(name) + 1;
-  const accent = type1 ? (TYPE_COLORS[type1] || '#888') : 'var(--border)';
-  const cardBg = type1 ? TYPE_BG[type1] : 'var(--grey-900)';
-
-  return (
-    <div draggable={!isDragging && !teamFull} onDragStart={e => { e.dataTransfer.effectAllowed='move'; onDragStart(name); }} onDragEnd={onDragEnd} onClick={onClick}
-      style={{ background:cardBg, borderTop:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderRight:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderBottom:`2px solid ${isSelected ? '#4ade80' : 'rgba(255,255,255,0.06)'}`, borderLeft:`4px solid ${isSelected ? '#4ade80' : accent}`, padding:'14px 12px', cursor:'pointer', opacity: isDragging ? 0.4 : 1, display:'flex', flexDirection:'column', alignItems:'center', gap:'8px', minHeight:'180px', transition:'opacity 0.15s, filter 0.15s, border-color 0.1s', userSelect:'none', boxShadow: isSelected ? '0 0 12px rgba(74,222,128,0.3)' : 'none', position:'relative' }}
-      onMouseEnter={e=>{ if(!teamFull && !isDragging) e.currentTarget.style.filter='brightness(1.25)'; }}
-      onMouseLeave={e=>{ e.currentTarget.style.filter='none'; }}>
-      <span style={{ position:'absolute', top:'7px', right:'9px', fontFamily:'var(--font-mono)', fontSize:'10px', color:accent, opacity:0.7 }}>#{id}</span>
-      {data?.sprite ? <img src={data.sprite} alt={name} style={{ width:'96px', height:'96px', imageRendering:'pixelated' }} /> : <div style={{ width:'96px', height:'96px', background:'var(--grey-700)', opacity:0.4 }} />}
-      <div style={{ fontFamily:'var(--font-display)', fontSize:'13px', textTransform:'uppercase', letterSpacing:'0.06em', color:'var(--white)', textAlign:'center', lineHeight:1.2 }}>{name.replace(/-/g,' ')}</div>
-      <div style={{ display:'flex', gap:'5px', flexWrap:'wrap', justifyContent:'center' }}>
-        {type1 && <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', color:TYPE_COLORS[type1]||'#888', letterSpacing:'0.06em', border:`1px solid ${TYPE_COLORS[type1]||'#888'}`, padding:'1px 6px', background:`${TYPE_BG[type1]||'#222'}` }}>{type1}</span>}
-        {type2 && <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', color:TYPE_COLORS[type2]||'#888', letterSpacing:'0.06em', border:`1px solid ${TYPE_COLORS[type2]||'#888'}`, padding:'1px 6px', background:`${TYPE_BG[type2]||'#222'}` }}>{type2}</span>}
-      </div>
-      <button onClick={e=>{ e.stopPropagation(); onAdd && onAdd(); }} disabled={teamFull} style={{ width:'100%', background:'none', border:'1px solid var(--white)', color:'var(--white)', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase', padding:'5px 0', marginTop:'2px', transition:'all 0.1s', opacity: teamFull ? 0.3 : 1 }} onMouseEnter={e=>{ if(!teamFull) e.currentTarget.style.background='rgba(255,255,255,0.12)'; }} onMouseLeave={e=>e.currentTarget.style.background='none'}>Add</button>
-    </div>
-  );
-}
-
-// Main builder: Pokémon grid on the left, party slots on the right.
+/* Main builder: Pokémon grid on the left, party slots on the right. */
 export default function SaveTeamPage({ setPage, user }) {
   const [team,            setTeam]            = useState([]);
   const [search,          setSearch]          = useState('');
@@ -229,6 +130,10 @@ export default function SaveTeamPage({ setPage, user }) {
   const { pokeData, fetchBasic, batchRegisterAll } = usePokemonData();
   const teamNames = new Set(team.map(p => p.name));
   const teamFull  = team.length >= 6;
+  const isMobile  = useIsMobile();
+
+  const [filterOpen,    setFilterOpen]    = useState(false);
+  const [saveSlotOpen,  setSaveSlotOpen]  = useState(false);
 
   // Load saved slots from Supabase
   useEffect(() => {
@@ -250,21 +155,22 @@ export default function SaveTeamPage({ setPage, user }) {
 
   // Bulk load Pokédex
   useEffect(() => {
-    if (_bulkLoaded.done) { batchRegisterAll(ALL_POKEMON); setLoadProgress(1); setAllLoaded(true); return; }
-    bulkLoadAll(ALL_POKEMON, p => setLoadProgress(p)).then(() => { batchRegisterAll(ALL_POKEMON); setAllLoaded(true); });
+    if (_bulkLoaded.done) { batchRegisterAll(); setLoadProgress(1); setAllLoaded(true); return; }
+    bulkLoadAll(ALL_POKEMON, p => setLoadProgress(p)).then(() => { batchRegisterAll(); setAllLoaded(true); });
   }, []);
 
   useEffect(() => {
     team.forEach(p => { if (!p.cachedData && !pokeData[p.name]) fetchBasic(p.name); });
   }, [team]);
 
-  const filtered = ALL_POKEMON.filter(n => {
+  /* Memoized filtered list so typing/clicking doesn't recompute 600 items every render */
+  const filtered = React.useMemo(() => ALL_POKEMON.filter(n => {
     if (teamNames.has(n)) return false;
     if (!n.replace(/-/g,' ').toLowerCase().includes(search.toLowerCase().trim())) return false;
     if (n === 'testmon') return filterType === 'all' || filterType === 'normal';
     if (filterType === 'all') return true;
     return (pokeData[n]?.types || []).includes(filterType);
-  });
+  }), [search, filterType, pokeData, team]);
 
   const addToTeam = useCallback(async (name, slotIdx = null) => {
     if (teamNames.has(name)) return;
@@ -307,6 +213,24 @@ export default function SaveTeamPage({ setPage, user }) {
   }, [selectedSlot]);
 
   const handleSave = (updated) => setTeam(prev => prev.map(p => p.name === updated.name ? updated : p));
+
+  /* Stable ref callbacks so PokemonCard memo is never busted by inline arrow functions.
+     The ref holds the latest version of handleCardClick and addToTeam without
+     causing child re-renders when the parent state changes. */
+  const cardClickRef = useRef(null);
+  const cardAddRef   = useRef(null);
+  const dragStartRef = useRef(null);
+  const dragEndRef   = useRef(null);
+  cardClickRef.current = handleCardClick;
+  cardAddRef.current   = (name) => addToTeam(name);
+  dragStartRef.current = setDraggedName;
+  dragEndRef.current   = () => setDraggedName(null);
+
+  /* These stable wrappers never change identity so memo stays intact */
+  const stableCardClick  = useCallback((name) => cardClickRef.current(name),  []);
+  const stableCardAdd    = useCallback((name) => cardAddRef.current(name),    []);
+  const stableDragStart  = useCallback((name) => dragStartRef.current(name),  []);
+  const stableDragEnd    = useCallback(() => dragEndRef.current(),            []);
 
   // Save team to a slot
   const saveToSlot = async (slotIdx) => {
@@ -407,76 +331,154 @@ export default function SaveTeamPage({ setPage, user }) {
   }
 
   return (
-    <div style={{ height:'calc(100vh - var(--nav-h))', background:'var(--black)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+    <div className="builder-page-scroll" style={{ height:'calc(100vh - var(--nav-h))', background:'var(--black)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
 
       {/* Header */}
-      <div style={{ background:'var(--grey-900)', borderBottom:'1px solid var(--border)', padding:'10px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
-        <button onClick={() => setPage('battlemode')} style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 24px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'14px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseLeave={e=>e.currentTarget.style.background='none'}>← Back</button>
-        <div style={{ textAlign:'center' }}>
-          <div style={{ fontFamily:'var(--font-display)', fontSize:'20px', letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--white)' }}>Save Team</div>
-          <div style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:(selectedCard || selectedSlot !== null) ? '#c0a820' : 'var(--grey-500)', transition:'color 0.2s', marginTop:'2px' }}>{saveMsg || hintText}</div>
+      <div style={{ background:'var(--grey-900)', borderBottom:'1px solid var(--border)', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, gap:'8px' }}>
+        <button onClick={() => setPage('battlemode')} style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'8px 14px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'12px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', flexShrink:0 }} onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'} onMouseLeave={e=>e.currentTarget.style.background='none'}>← Back</button>
+        <div style={{ textAlign:'center', flex:1, minWidth:0 }}>
+          <div style={{ fontFamily:'var(--font-display)', fontSize:'16px', letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--white)' }}>Save Team</div>
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:(selectedCard || selectedSlot !== null) ? '#c0a820' : 'var(--grey-500)', transition:'color 0.2s', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{saveMsg || hintText}</div>
         </div>
-        <div style={{ fontFamily:'var(--font-mono)', fontSize:'12px', color: team.length === 6 ? '#4ade80' : 'var(--grey-500)' }}>
-          {team.length} / 6 {team.length === 6 ? ' Ready to save' : ''}
-        </div>
+        {/* Save Slots button: mobile shows a dropdown trigger */}
+        {isMobile ? (
+          <button onClick={() => setSaveSlotOpen(o => !o)} style={{ background: saveSlotOpen ? 'rgba(64,144,208,0.2)' : 'none', border:'1px solid #4090d0', color:'#4090d0', padding:'8px 12px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.1em', textTransform:'uppercase', flexShrink:0 }}>
+            Save {saveSlotOpen ? '▲' : '▼'}
+          </button>
+        ) : (
+          <div style={{ fontFamily:'var(--font-mono)', fontSize:'12px', color: team.length === 6 ? '#4ade80' : 'var(--grey-500)', flexShrink:0 }}>
+            {team.length} / 6 {team.length === 6 ? ' Ready' : ''}
+          </div>
+        )}
       </div>
 
-      <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
+      {/* Mobile save slot dropdown overlay */}
+      {isMobile && saveSlotOpen && (
+        <SaveSlotPanel slots={slots} currentTeam={team} onSave={saveToSlot} onLoad={loadFromSlot} onDelete={deleteSlot} saving={saving} teamName={teamName} onTeamNameChange={setTeamName} isMobileDropdown={true} onClose={() => setSaveSlotOpen(false)} />
+      )}
 
-        {/* Left: Party */}
-        <div style={{ width:'300px', minWidth:'300px', borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', flexShrink:0 }}>
-          <div style={{ padding:'12px 16px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
-            <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--grey-400)' }}>Your Party</span>
-            <span style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:'var(--grey-500)' }}>{team.length} / 6</span>
-          </div>
-          <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'6px', padding:'12px', overflowY:'auto' }}>
+      {isMobile ? (
+        /* Mobile layout: narrow party column on left, Pokémon grid on right */
+        <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
+
+          {/* Left: compact mini party column */}
+          <div style={{ width:'60px', flexShrink:0, borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', alignItems:'center', gap:'4px', padding:'6px 4px', overflowY:'auto', background:'var(--grey-900)' }}>
+            <div style={{ fontFamily:'var(--font-mono)', fontSize:'8px', color:'var(--grey-600)', textTransform:'uppercase', marginBottom:'2px', letterSpacing:'0.08em' }}>{team.length}/6</div>
             {[0,1,2,3,4,5].map(idx => (
-              <PartySlot key={idx} pokemon={team[idx]||null} idx={idx} isSelected={selectedSlot===idx} dragOver={dragOverSlot===idx}
-                onClick={() => handleSlotClick(idx)} onDrop={handleDrop} onRemove={handleRemove}
-                onDragOver={setDragOverSlot} onDragLeave={() => setDragOverSlot(null)} onCustomize={setCustomizeTarget} />
+              <MiniPartySlot key={idx} pokemon={team[idx]||null} idx={idx} isSelected={selectedSlot===idx} onClick={() => handleSlotClick(idx)} />
             ))}
-          </div>
-          <div style={{ padding:'10px 12px', borderTop:'1px solid var(--border)', flexShrink:0 }}>
-            <button onClick={() => { const slots2=6-team.length; if(slots2<=0) return; const newMons=Array.from({length:slots2},(_,i)=>({...makeTestMon(),name:i===0&&!teamNames.has('testmon')?'testmon':`testmon-${team.length+i+1}`})); setTeam(prev=>[...prev,...newMons]); }} disabled={teamFull}
-              style={{ width:'100%', background:'transparent', border:'1px solid var(--border-mid)', color: teamFull ? 'var(--grey-700)' : 'var(--grey-400)', padding:'8px', cursor: teamFull ? 'not-allowed' : 'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase' }}>
-              Fill with Test Mons
-            </button>
-          </div>
-        </div>
-
-        {/* Center: Pokémon grid */}
-        <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          <div style={{ padding:'10px 14px', borderBottom:'1px solid var(--border)', background:'var(--grey-900)', display:'flex', gap:'8px', flexWrap:'wrap', alignItems:'center', flexShrink:0 }}>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search Pokémon..." style={{ background:'var(--grey-800)', border:'1px solid var(--border-mid)', padding:'6px 12px', color:'var(--white)', fontSize:'12px', fontFamily:'var(--font-mono)', outline:'none', width:'160px', flexShrink:0 }} onFocus={e=>e.target.style.borderColor='var(--border-lt)'} onBlur={e=>e.target.style.borderColor='var(--border-mid)'} />
-            <button onClick={()=>setFilterType('all')} style={{ padding:'5px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.04em', background: filterType==='all' ? 'var(--grey-600)' : 'var(--grey-900)', border:`1px solid ${filterType==='all' ? 'var(--border-lt)' : 'var(--border-mid)'}`, color:'var(--white)', transition:'all 0.1s' }}>All</button>
-            {ALL_TYPES.map(t => (
-              <button key={t} onClick={()=>setFilterType(filterType===t?'all':t)} style={{ padding:'5px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.04em', background: filterType===t ? (TYPE_BG[t]||'#333') : 'var(--grey-900)', border:`1px solid ${filterType===t ? (TYPE_COLORS[t]||'#555') : 'var(--border-mid)'}`, color:'var(--white)', transition:'all 0.1s' }}>{t}</button>
-            ))}
-          </div>
-          <div style={{ flex:1, overflowY:'auto', padding:'12px 14px' }}>
-            {filtered.length === 0
-              ? <div style={{ fontFamily:'var(--font-mono)', fontSize:'13px', color:'var(--grey-500)', textAlign:'center', paddingTop:'60px' }}>No Pokémon match your filters</div>
-              : <div style={{ display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap:'8px' }}>
-                  {filtered.map(name => (
-                    <PokemonCard key={name} name={name} pokeData={pokeData} teamFull={teamFull}
-                      isDragging={draggedName===name} isSelected={selectedCard===name}
-                      onDragStart={setDraggedName} onDragEnd={()=>setDraggedName(null)}
-                      onClick={()=>handleCardClick(name)} onAdd={()=>addToTeam(name)} />
-                  ))}
-                </div>
-            }
-          </div>
-          <div style={{ padding:'6px 14px', borderTop:'1px solid var(--border)', fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--grey-600)', flexShrink:0 }}>
-            {filtered.length} Pokémon
-            {(selectedCard || selectedSlot !== null) && (
-              <button onClick={()=>{setSelectedCard(null);setSelectedSlot(null);}} style={{ marginLeft:'16px', background:'none', border:'1px solid var(--border-mid)', color:'var(--grey-400)', padding:'2px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase' }}>Cancel</button>
+            {/* Edit and Delete buttons when a filled slot is selected */}
+            {selectedSlot !== null && team[selectedSlot] && (
+              <>
+                <button onClick={() => setCustomizeTarget(team[selectedSlot])} style={{ background:'rgba(255,255,255,0.08)', border:'1px solid var(--border-lt)', color:'var(--white)', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', padding:'3px 6px', marginTop:'4px', width:'52px', textTransform:'uppercase' }}>Edit</button>
+                <button onClick={() => { handleRemove(selectedSlot); setSelectedSlot(null); }} style={{ background:'rgba(200,50,50,0.2)', border:'1px solid #c03030', color:'#ff6060', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', padding:'3px 6px', marginTop:'2px', width:'52px', textTransform:'uppercase' }}>Del</button>
+              </>
             )}
           </div>
+
+          {/* Right: Pokémon grid with filter bar */}
+          <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+
+            {/* Filter bar: search + dropdown trigger */}
+            <div style={{ padding:'6px 8px', borderBottom:'1px solid var(--border)', background:'var(--grey-900)', display:'flex', gap:'6px', alignItems:'center', flexShrink:0 }}>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…" style={{ flex:1, background:'var(--grey-800)', border:'1px solid var(--border-mid)', padding:'5px 8px', color:'var(--white)', fontSize:'11px', fontFamily:'var(--font-mono)', outline:'none', minWidth:0 }} onFocus={e=>e.target.style.borderColor='var(--border-lt)'} onBlur={e=>e.target.style.borderColor='var(--border-mid)'} />
+              <button onClick={() => setFilterOpen(o => !o)} style={{ background: filterType !== 'all' ? (TYPE_BG[filterType]||'var(--grey-700)') : 'var(--grey-800)', border:`1px solid ${filterType !== 'all' ? (TYPE_COLORS[filterType]||'var(--border-lt)') : 'var(--border-mid)'}`, color: filterType !== 'all' ? (TYPE_COLORS[filterType]||'var(--white)') : 'var(--grey-300)', padding:'5px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', flexShrink:0 }}>
+                {filterType === 'all' ? `Filter ${filterOpen ? '▲' : '▼'}` : `${filterType} ${filterOpen ? '▲' : '▼'}`}
+              </button>
+            </div>
+
+            {/* Filter dropdown panel */}
+            {filterOpen && (
+              <div style={{ background:'var(--grey-900)', borderBottom:'1px solid var(--border)', padding:'8px', display:'flex', flexWrap:'wrap', gap:'5px', flexShrink:0 }}>
+                <button onClick={()=>{setFilterType('all'); setFilterOpen(false);}} style={{ padding:'4px 8px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', background: filterType==='all' ? 'var(--grey-600)' : 'var(--grey-800)', border:`1px solid ${filterType==='all' ? 'var(--border-lt)' : 'var(--border-mid)'}`, color:'var(--white)' }}>All</button>
+                {ALL_TYPES.map(t => (
+                  <button key={t} onClick={()=>{setFilterType(filterType===t?'all':t); setFilterOpen(false);}} style={{ padding:'4px 8px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase', background: filterType===t ? (TYPE_BG[t]||'#333') : 'var(--grey-800)', border:`1px solid ${filterType===t ? (TYPE_COLORS[t]||'#555') : 'var(--border-mid)'}`, color: TYPE_COLORS[t]||'var(--white)' }}>{t}</button>
+                ))}
+              </div>
+            )}
+
+            {/* 2-column Pokémon grid: virtualised so only ~20 rows render at once */}
+            <VirtualGrid
+              items={filtered}
+              pokeData={pokeData}
+              teamFull={teamFull}
+              draggedName={draggedName}
+              selectedCard={selectedCard}
+              onDragStart={stableDragStart}
+              onDragEnd={stableDragEnd}
+              onClick={stableCardClick}
+              onAdd={stableCardAdd}
+            />
+
+            {/* Footer count */}
+            <div style={{ padding:'4px 10px', borderTop:'1px solid var(--border)', fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--grey-600)', flexShrink:0, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span>{filtered.length} Pokémon</span>
+              {(selectedCard || selectedSlot !== null) && (
+                <button onClick={()=>{setSelectedCard(null);setSelectedSlot(null);}} style={{ background:'none', border:'1px solid var(--border-mid)', color:'var(--grey-400)', padding:'2px 8px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'9px', textTransform:'uppercase' }}>Cancel</button>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Right: Save slots */}
-        <SaveSlotPanel slots={slots} currentTeam={team} onSave={saveToSlot} onLoad={loadFromSlot} onDelete={deleteSlot} saving={saving} teamName={teamName} onTeamNameChange={setTeamName} />
-      </div>
+      ) : (
+        /* Desktop layout: party | grid | save slots */
+        <div className="battle-builder-layout">
+
+          {/* Left: Party */}
+          <div className="battle-builder-party">
+            <div style={{ padding:'12px 16px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
+              <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.14em', textTransform:'uppercase', color:'var(--grey-400)' }}>Your Party</span>
+              <span style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:'var(--grey-500)' }}>{team.length} / 6</span>
+            </div>
+            <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'6px', padding:'12px', overflowY:'auto' }}>
+              {[0,1,2,3,4,5].map(idx => (
+                <PartySlot key={idx} pokemon={team[idx]||null} idx={idx} isSelected={selectedSlot===idx} dragOver={dragOverSlot===idx}
+                  onClick={() => handleSlotClick(idx)} onDrop={handleDrop} onRemove={handleRemove}
+                  onDragOver={setDragOverSlot} onDragLeave={() => setDragOverSlot(null)} onCustomize={setCustomizeTarget} />
+              ))}
+            </div>
+            <div style={{ padding:'10px 12px', borderTop:'1px solid var(--border)', flexShrink:0 }}>
+              <button onClick={() => { const slots2=6-team.length; if(slots2<=0) return; const newMons=Array.from({length:slots2},(_,i)=>({...makeTestMon(),name:i===0&&!teamNames.has('testmon')?'testmon':`testmon-${team.length+i+1}`})); setTeam(prev=>[...prev,...newMons]); }} disabled={teamFull}
+                style={{ width:'100%', background:'transparent', border:'1px solid var(--border-mid)', color: teamFull ? 'var(--grey-700)' : 'var(--grey-400)', padding:'8px', cursor: teamFull ? 'not-allowed' : 'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase' }}>
+                Fill with Test Mons
+              </button>
+            </div>
+          </div>
+
+          {/* Center: Pokémon grid */}
+          <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+            <div style={{ padding:'10px 14px', borderBottom:'1px solid var(--border)', background:'var(--grey-900)', display:'flex', gap:'8px', flexWrap:'wrap', alignItems:'center', flexShrink:0 }}>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search Pokémon..." style={{ background:'var(--grey-800)', border:'1px solid var(--border-mid)', padding:'6px 12px', color:'var(--white)', fontSize:'12px', fontFamily:'var(--font-mono)', outline:'none', width:'160px', flexShrink:0 }} onFocus={e=>e.target.style.borderColor='var(--border-lt)'} onBlur={e=>e.target.style.borderColor='var(--border-mid)'} />
+              <button onClick={()=>setFilterType('all')} style={{ padding:'5px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.04em', background: filterType==='all' ? 'var(--grey-600)' : 'var(--grey-900)', border:`1px solid ${filterType==='all' ? 'var(--border-lt)' : 'var(--border-mid)'}`, color:'var(--white)', transition:'all 0.1s' }}>All</button>
+              {ALL_TYPES.map(t => (
+                <button key={t} onClick={()=>setFilterType(filterType===t?'all':t)} style={{ padding:'5px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.04em', background: filterType===t ? (TYPE_BG[t]||'#333') : 'var(--grey-900)', border:`1px solid ${filterType===t ? (TYPE_COLORS[t]||'#555') : 'var(--border-mid)'}`, color:'var(--white)', transition:'all 0.1s' }}>{t}</button>
+              ))}
+            </div>
+            <div style={{ flex:1, overflowY:'auto', padding:'12px 14px' }}>
+              {filtered.length === 0
+                ? <div style={{ fontFamily:'var(--font-mono)', fontSize:'13px', color:'var(--grey-500)', textAlign:'center', paddingTop:'60px' }}>No Pokémon match your filters</div>
+                : <div className="grid-5col">
+                    {filtered.map(name => (
+                      <PokemonCard key={name} name={name} cardData={pokeData[name]}
+                        isDragging={draggedName===name} isSelected={selectedCard===name}
+                        onDragStart={stableDragStart} onDragEnd={stableDragEnd}
+                        onClick={stableCardClick} onAdd={stableCardAdd} />
+                    ))}
+                  </div>
+              }
+            </div>
+            <div style={{ padding:'6px 14px', borderTop:'1px solid var(--border)', fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--grey-600)', flexShrink:0 }}>
+              {filtered.length} Pokémon
+              {(selectedCard || selectedSlot !== null) && (
+                <button onClick={()=>{setSelectedCard(null);setSelectedSlot(null);}} style={{ marginLeft:'16px', background:'none', border:'1px solid var(--border-mid)', color:'var(--grey-400)', padding:'2px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase' }}>Cancel</button>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Save slots */}
+          <SaveSlotPanel slots={slots} currentTeam={team} onSave={saveToSlot} onLoad={loadFromSlot} onDelete={deleteSlot} saving={saving} teamName={teamName} onTeamNameChange={setTeamName} />
+        </div>
+      )}
 
       {customizeTarget && (
         <CustomizePopup pokemon={customizeTarget} onClose={()=>setCustomizeTarget(null)} onSave={handleSave} />

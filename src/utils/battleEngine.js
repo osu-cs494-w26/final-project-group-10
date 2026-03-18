@@ -23,7 +23,7 @@ export function calcBattleStat(base, ev = 0, iv = 31) {
   return Math.floor((2 * base + iv + Math.floor(ev / 4)) * BATTLE_LEVEL / 100) + 5;
 }
 
-// Gen 1–5 type effectiveness multipliers.
+// Type effectiveness multipliers.
 export const TYPE_CHART = {
   normal:   { rock: 0.5, ghost: 0, steel: 0.5 },
   fire:     { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, steel: 2 },

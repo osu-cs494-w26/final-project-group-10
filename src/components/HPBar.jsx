@@ -28,7 +28,7 @@ const STAGE_KEYS = [
 const STATUS_COLORS = { BRN:'#b05030', PSN:'#7040a0', TOX:'#7040a0', PAR:'#a09020', SLP:'#506080', FRZ:'#4080a0' };
 const STATUS_LABELS = { brn:'BRN', psn:'PSN', par:'PAR', slp:'SLP', frz:'FRZ', tox:'TOX' };
 
-// HP bar — instant update, no animation, HP numbers shown on both sides
+// HP bar with instant update, no animation, and HP numbers shown on both sides.
 export default function HPBar({ battler, side }) {
   if (!battler) return null;
 
@@ -76,7 +76,7 @@ export default function HPBar({ battler, side }) {
         </div>
       </div>
 
-      {/* HP numbers — shown on both sides */}
+      {/* HP numbers shown on both sides. */}
       <div style={{ textAlign:'right', fontSize:'11px', fontFamily:'var(--font-mono)', color:'var(--grey-400)' }}>
         {hp} / {battler.maxHp}
       </div>

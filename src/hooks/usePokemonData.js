@@ -5,17 +5,16 @@
 
 import { useState, useCallback, useRef } from 'react';
 
-// Global cache shared across all hook instances - persists for the session
-const pokeCache = {};  // name -> full pokemon data
-const moveCache = {};  // moveName -> { type, power, pp, category, effect, flavor }
-const abilityCache = {}; // abilityUrl -> { desc }
+// Global cache shared across all hook instances. Persists for the entire session.
+export const pokeCache = {};  /* name -> full pokemon data */
+const moveCache = {};  /* moveName -> { type, power, pp, category, effect, flavor } */
+const abilityCache = {}; /* abilityUrl -> { desc } */
 
-// Fetch full pokemon data from PokeAPI and cache it globally for the session
-// Fetches full Pokémon data from PokeAPI and caches it for the session.
+/* Fetch full pokemon data from PokeAPI and cache it globally for the session */
 export async function fetchPokeData(name) {
   if (pokeCache[name]) return pokeCache[name];
 
-  // Testmon is a local dummy never hits the API
+  // Testmon is a local dummy and never hits the API.
   if (name.startsWith('testmon')) {
     const entry = {
       id: 0, name,
@@ -36,7 +35,7 @@ export async function fetchPokeData(name) {
   const res  = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
   const data = await res.json();
 
-  // Fetch abilities in parallel
+  // Fetches all abilities in parallel and attaches descriptions.
   const abilities = await Promise.all(data.abilities.map(async a => {
     try {
       if (abilityCache[a.ability.url]) return { name: a.ability.name, isHidden: a.is_hidden, desc: abilityCache[a.ability.url] };
@@ -63,13 +62,13 @@ export async function fetchPokeData(name) {
   return entry;
 }
 
-// Custom effect descriptions that override PokeAPI text
+/* Custom effect descriptions that override PokeAPI text */
 const MOVE_EFFECT_OVERRIDES = {
   'moonlight':   'Heal the user for 25% of max health or 50% if a weather effect is in play.',
   'autotomize':  'Raises the user\'s speed by two stages.',
 };
 
-// Move name overrides: PokeAPI uses different slugs for some moves
+/* Move name overrides: PokeAPI uses different slugs for some moves */
 const MOVE_NAME_OVERRIDES = {
   "land's wrath":  'lands-wrath',
   "forest's curse":'forests-curse',
@@ -79,8 +78,7 @@ const MOVE_NAME_OVERRIDES = {
   'vicegrip':      'vise-grip',
 };
 
-// Fetch a single move's type/power/pp/effect and cache it globally
-// Fetches a move's type, power, PP, and effect text, then caches it.
+/* Fetches a move's type, power, PP, and effect text, then caches it. */
 export async function fetchMoveData(moveName) {
   if (moveCache[moveName]) return moveCache[moveName];
   try {
@@ -109,49 +107,42 @@ export async function fetchMoveData(moveName) {
   }
 }
 
-// React hook that exposes sprite/data state and fetch helpers to components
-// React hook exposing sprite state and fetch helpers to components.
+/*
+ * React hook exposing a lightweight tick-based update signal.
+ * Components read directly from pokeCache (module level) so React state
+ * never holds a 600-entry object. Only a counter triggers re-renders.
+ */
 export function usePokemonData() {
-  const [sprites,  setSprites]  = useState({});
-  const [pokeData, setPokeData] = useState({});
+  // Single integer tick. Incrementing it forces a re-render to pick up new cache entries.
+  const [tick, setTick] = useState(0);
   const loading = useRef(new Set());
 
+  const bumpTick = useCallback(() => setTick(t => t + 1), []);
+
   const fetchBasic = useCallback(async (name) => {
-    if (sprites[name]) return; // already in React state skip
-    if (loading.current.has(name)) return; // fetch already in-flight
+    if (pokeCache[name]) return;
+    if (loading.current.has(name)) return;
     loading.current.add(name);
     try {
-      const data = await fetchPokeData(name);
-      setSprites(p  => ({ ...p, [name]: data.sprite }));
-      setPokeData(p => ({ ...p, [name]: data }));
+      await fetchPokeData(name);
+      bumpTick();
     } catch(e) { console.error('Failed fetchBasic', name, e); }
     loading.current.delete(name);
-  }, [sprites]);
+  }, [bumpTick]);
 
-  // Pre-fetch full data for a pokemon including all move types (first 100 moves)
-  // Fetch all data for a pokemon + kick off move type fetches in background
+  // Prefetches full data for a Pokémon including all move types.
   const prefetchFull = useCallback(async (name) => {
     const data = await fetchPokeData(name);
-    setSprites(p  => ({ ...p, [name]: data.sprite }));
-    setPokeData(p => ({ ...p, [name]: data }));
-    // Kick off move type fetches in background (don't await)
     data.moves.slice(0, 120).forEach(m => fetchMoveData(m));
+    bumpTick();
     return data;
-  }, []);
+  }, [bumpTick]);
 
-  // Push all globally-cached pokemon into React state in one batch
-  const batchRegisterAll = useCallback((names) => {
-    setSprites(prev => {
-      const newSprites = { ...prev };
-      names.forEach(n => { if (pokeCache[n]) newSprites[n] = pokeCache[n].sprite; });
-      return newSprites;
-    });
-    setPokeData(prev => {
-      const newData = { ...prev };
-      names.forEach(n => { if (pokeCache[n]) newData[n] = pokeCache[n]; });
-      return newData;
-    });
-  }, []);
+  // Signals that bulk load is done so components re-read from pokeCache.
+  const batchRegisterAll = useCallback(() => {
+    bumpTick();
+  }, [bumpTick]);
 
-  return { sprites, pokeData, fetchBasic, prefetchFull, batchRegisterAll };
+  // pokeData is a direct view into pokeCache with no React state copy.
+  return { pokeData: pokeCache, sprites: pokeCache, fetchBasic, prefetchFull, batchRegisterAll };
 }
