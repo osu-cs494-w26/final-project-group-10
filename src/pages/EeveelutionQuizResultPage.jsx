@@ -171,15 +171,7 @@ export default function EeveelutionQuizResultPage({ result, setPage, clearResult
       `}</style>
 
       <div style={S.container}>
-        {/* Back button to quiz hub */}
-        <button
-          onClick={handleBack}
-          style={S.backBtn}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'none'}
-        >
-          ← Back to Quizzes
-        </button>
+    
 
         <h2 style={S.title}>Your Eeveelution Match</h2>
         
