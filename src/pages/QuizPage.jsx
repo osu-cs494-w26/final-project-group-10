@@ -37,6 +37,16 @@ const QUIZ_MODES = [
     bg: '#7a2a10',
     active: true,
   },
+  {
+  id: 'eeveelution-quiz',
+  num: '04',
+  label: 'Eeveelution',
+  subtitle: 'Find Your Match',
+  description: 'Which Eeveelution matches your personality? Answer 10 questions to find your perfect Eeveevolution!',
+  accent: '#b87cc0',
+  bg: '#3a2050',
+  active: true,
+},
 ];
 
 // Single quiz card with coloured left border and hover state.
@@ -116,7 +126,7 @@ export default function QuizPage({ setPage }) {
         </div>
 
         <div style={{ background:'rgba(0,0,0,0.80)', border:'1px solid var(--border)', padding:'24px' }}>
-          <div className="quiz-card-grid">
+        <div className="quiz-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>          
             {QUIZ_MODES.map((mode) => (
               <QuizCard key={mode.id} mode={mode} onClick={handleSelect} />
             ))}

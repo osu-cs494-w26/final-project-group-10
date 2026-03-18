@@ -26,6 +26,8 @@ import PokemonQuizPage           from './pages/PokemonQuizPage.jsx';
 import PokemonQuizResultPage     from './pages/PokemonQuizResultPage.jsx';
 import EvolutionQuizPage         from './pages/EvolutionQuizPage.jsx';
 import EvolutionQuizResultPage   from './pages/EvolutionQuizResultPage.jsx';
+import EeveelutionQuizPage from './pages/EeveelutionQuizPage.jsx';
+import EeveelutionQuizResultPage from './pages/EeveelutionQuizResultPage.jsx';
 import WhosThatPokemonPage       from './components/wtp/WhosThatPokemonPage.jsx';
 import WhosThatPokemonGamePage   from './components/wtp/WhosThatPokemonGamePage.jsx';
 import WhosThatPokemonStatsPage  from './components/wtp/WhosThatPokemonStatsPage.jsx';
@@ -44,6 +46,7 @@ function AppShell({ user, signOut }) {
   const [quizResult,          setQuizResult]          = useState(null);
   const [pokemonQuizResult,   setPokemonQuizResult]   = useState(null);
   const [evolutionQuizResult, setEvolutionQuizResult] = useState(null);
+  const [eeveelutionResult, setEeveelutionResult] = useState(null);
   const [wtpSession,          setWtpSession]          = useState({ modeKey: null, config: null });
   const [wtpPokedexTarget,    setWtpPokedexTarget]    = useState(null);
   const [selectedPokemon,     setSelectedPokemon]     = useState(null);
@@ -99,6 +102,7 @@ function AppShell({ user, signOut }) {
       'personality-quiz':  '/quiz/personality',
       'pokemon-quiz':      '/quiz/pokemon',
       'evolution-quiz':    '/quiz/evolution',
+      'eeveelution-quiz':  '/quiz/eeveelution',    
       
       personality:         '/quiz/personality',
       'personality-result':'/quiz/personality/result',
@@ -108,6 +112,9 @@ function AppShell({ user, signOut }) {
       evolutionquiz:       '/quiz/evolution',
       'evolution-result':       '/quiz/evolution/result',
       'evolution-quiz-result':  '/quiz/evolution/result',
+      eeveelutionquiz:       '/quiz/eeveelution',
+      'eeveelution-result':       '/quiz/eeveelution/result',
+      'eeveelution-quiz-result':  '/quiz/eeveelution/result',
     };
     navigate(MAP[key] || '/');
   };
@@ -276,6 +283,18 @@ function AppShell({ user, signOut }) {
           evolutionQuizResult
             ? <EvolutionQuizResultPage result={evolutionQuizResult} setPage={setPage} clearResult={() => setEvolutionQuizResult(null)} />
             : <Navigate to="/quiz/evolution" replace />
+        } />
+            {/* Eeveelution quiz */}
+        <Route path="/quiz/eeveelution" element={
+          <EeveelutionQuizPage
+            setPage={setPage}
+            setEeveelutionResult={setEeveelutionResult}
+          />
+        } />
+        <Route path="/quiz/eeveelution/result" element={
+          eeveelutionResult
+            ? <EeveelutionQuizResultPage result={eeveelutionResult} setPage={setPage} clearResult={() => setEeveelutionResult(null)} />
+            : <Navigate to="/quiz" replace />
         } />
 
         {/* Fallback */}
