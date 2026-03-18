@@ -6,24 +6,23 @@ This is a fullstack Pokémon web app built with React and Vite. You can browse t
 
 **Pokédex** Interactive list of Pokémon up to 6th generation with following features:
 
-Filters - allows you to filter list based on name, type, lowest-highest, highest-lowest, A-Z, Z-A
+* Filters - allows you to filter list based on name, type, lowest-highest, highest-lowest, A-Z, Z-A
 
-Cry Sound Button - hear the sound of selected Pokémon
+* Cry Sound Button - hear the sound of selected Pokémon
 
-Stats Bar - allows you to visualize base stats of Pokémon (including HP, Attack, Defense, etc)
+* Stats Bar - allows you to visualize base stats of Pokémon (including HP, Attack, Defense, etc)
 
-Abilites List - see detailed descriptions for Pokémon abilities, including hidden ones
+* Abilites List - see detailed descriptions for Pokémon abilities, including hidden ones
 
-Height Comparison - enter your height to see how big (or small) Pokémon are compared to you
-
+* Height Comparison - enter your height to see how big (or small) Pokémon are compared to you
 
 **Battle System** Turnbased battles using the official Gen 5 damage formula. Supports three modes:
 
-Quick Battle gives you and your AI opponent a random Pokemon team with random moves.
+* Quick Battle gives you and your AI opponent a random Pokemon team with random moves.
 
-Build Team lets you construct a custom team with full EV allocation, move customisation, items, and ability selection, then save it to one of ten slots.
+* Build Team lets you construct a custom team with full EV allocation, move customisation, items, and ability selection, then save it to one of ten slots.
 
-Battle Trainer lets you challenge 12 trainers from across the games, each with curated teams and EV spreads, using one of your saved teams.
+* Battle Trainer lets you challenge 12 trainers from across the games, each with curated teams and EV spreads, using one of your saved teams.
 
 **Who's That Pokémon?** 
 
