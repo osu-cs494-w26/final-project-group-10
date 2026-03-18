@@ -40,22 +40,22 @@ export default function TeamStatusBar({ playerTeam, aiTeam, playerActive, aiActi
   return (
     <div style={{
       background: 'var(--grey-800)', borderBottom:'1px solid var(--border)',
-      padding:'8px 16px', display:'flex', justifyContent:'space-between', alignItems:'center',
+      padding:'6px 12px', display:'flex', justifyContent:'space-between', alignItems:'center',
+      gap:'8px', overflow:'hidden',
     }}>
       {/* Player pokeballs */}
-      <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
-        <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', color:'var(--grey-400)', letterSpacing:'0.1em', marginRight:'4px', textTransform:'uppercase' }}>Your Team</span>
+      <div style={{ display:'flex', gap:'4px', alignItems:'center', flexShrink:0 }}>
+        <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', color:'var(--grey-400)', letterSpacing:'0.1em', marginRight:'4px', textTransform:'uppercase', whiteSpace:'nowrap' }}>You</span>
         {playerTeam.map((p, i) => <Pokeball key={i} poke={p} isActive={i === playerActive} />)}
       </div>
 
-      <div style={{ fontFamily:'var(--font-display)', fontSize:'12px', letterSpacing:'0.15em', color:'var(--grey-300)', textTransform:'uppercase' }}>
-        Pokemon Battle
-      </div>
+      {/* Center label: hidden on mobile via CSS class */}
+      <div className="team-status-center">Pokemon Battle</div>
 
       {/* Opponent pokeballs */}
-      <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
+      <div style={{ display:'flex', gap:'4px', alignItems:'center', flexShrink:0 }}>
         {aiTeam.map((p, i) => <Pokeball key={i} poke={p} isActive={i === aiActive} />)}
-        <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', color:'var(--grey-400)', letterSpacing:'0.1em', marginLeft:'4px', textTransform:'uppercase' }}>Opponent</span>
+        <span style={{ fontFamily:'var(--font-display)', fontSize:'11px', color:'var(--grey-400)', letterSpacing:'0.1em', marginLeft:'4px', textTransform:'uppercase', whiteSpace:'nowrap' }}>Foe</span>
       </div>
     </div>
   );

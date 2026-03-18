@@ -116,10 +116,10 @@ function AnimHPBar({ battler, hitSignal }) {
   const spd    = battler.spd ?? battler.baseSPD ?? '?';
 
   return (
-    <div style={{ background:'var(--grey-800)', border:'1px solid var(--border-mid)', padding:'14px 18px', minWidth:'280px', maxWidth:'340px' }}>
+    <div className="battle-hp-card">
       {/* Name row */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'6px', gap:'8px' }}>
-        <span style={{ fontFamily:'var(--font-display)', fontSize:'18px', fontWeight:500, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--white)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+        <span className="hp-name" style={{ fontFamily:'var(--font-display)', fontSize:'18px', fontWeight:500, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--white)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
           {battler.name}
           {battler.gender === 'm' && <span style={{ fontFamily:'var(--font-mono)', fontSize:'13px', color:'#6ab0ff', marginLeft:'6px', fontWeight:400, letterSpacing:0 }}>♂</span>}
           {battler.gender === 'f' && <span style={{ fontFamily:'var(--font-mono)', fontSize:'13px', color:'#ff8aad', marginLeft:'6px', fontWeight:400, letterSpacing:0 }}>♀</span>}
@@ -135,7 +135,7 @@ function AnimHPBar({ battler, hitSignal }) {
               {status}
             </span>
           )}
-          <span style={{ fontSize:'12px', color:'var(--grey-500)', fontFamily:'var(--font-mono)' }}>Lv50</span>
+          <span className="hp-lv" style={{ fontSize:'12px', color:'var(--grey-500)', fontFamily:'var(--font-mono)' }}>Lv50</span>
         </div>
       </div>
 
@@ -143,7 +143,7 @@ function AnimHPBar({ battler, hitSignal }) {
       {battler.types?.length > 0 && (
         <div style={{ display:'flex', gap:'5px', marginBottom:'7px' }}>
           {battler.types.map(t => (
-            <span key={t} style={{
+            <span key={t} className="hp-type" style={{
               fontFamily:    'var(--font-mono)',
               fontSize:      '11px',
               fontWeight:    700,
@@ -163,7 +163,7 @@ function AnimHPBar({ battler, hitSignal }) {
       {/* Speed display */}
       <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'6px' }}>
         <span style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:'var(--grey-500)', letterSpacing:'0.05em' }}>SPD</span>
-        <span style={{ fontFamily:'var(--font-mono)', fontSize:'13px', color:'#80b8e0', fontWeight:600 }}>{spd}</span>
+        <span className="hp-spd-val" style={{ fontFamily:'var(--font-mono)', fontSize:'13px', color:'#80b8e0', fontWeight:600 }}>{spd}</span>
         {stages.spd !== 0 && (
           <span style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color: stages.spd > 0 ? '#7ab87a' : '#b87a7a', border:`1px solid ${stages.spd > 0 ? '#7ab87a' : '#b87a7a'}`, padding:'0 4px' }}>
             {stages.spd > 0 ? '+' : ''}{stages.spd}
@@ -188,13 +188,13 @@ function AnimHPBar({ battler, hitSignal }) {
       {/* HP bar */}
       <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'4px' }}>
         <span style={{ fontSize:'12px', color:'var(--grey-500)', fontFamily:'var(--font-mono)', width:'20px', flexShrink:0 }}>HP</span>
-        <div style={{ flex:1, height:'10px', background:'var(--grey-700)', position:'relative', overflow:'hidden' }}>
+        <div className="hp-bar" style={{ flex:1, height:'10px', background:'var(--grey-700)', position:'relative', overflow:'hidden' }}>
           <div ref={barRef} style={{ position:'absolute', left:0, top:0, bottom:0, width:`${Math.round(pct*100)}%`, background:color }} />
         </div>
       </div>
 
       {/* HP numbers */}
-      <div style={{ textAlign:'right', fontSize:'13px', fontFamily:'var(--font-mono)', color:'var(--grey-400)' }}>
+      <div className="hp-nums" style={{ textAlign:'right', fontSize:'13px', fontFamily:'var(--font-mono)', color:'var(--grey-400)' }}>
         {battler.hp} / {battler.maxHp}
       </div>
 
@@ -285,12 +285,10 @@ function BattleSprite({ battler, isBack, lungeSignal, hitSignal, faintSignal, sw
   const src = isBack ? battler?.spriteBack : battler?.sprite;
 
   return (
-    <div ref={ref} style={{ willChange:'transform, opacity, filter', display:'inline-block' }}>
+    <div ref={ref} style={{ willChange:'transform, opacity, filter', display:'inline-block', flexShrink:0 }}>
       {src
-        ? <img src={src} alt={battler?.name || ''}
-            style={{ width:'220px', height:'220px', imageRendering:'pixelated',
-                     filter:'drop-shadow(0 4px 8px rgba(0,0,0,0.9))', display:'block' }} />
-        : <div style={{ width:'220px', height:'220px', background:'var(--grey-800)' }} />
+        ? <img src={src} alt={battler?.name || ''} className="battle-sprite-img" />
+        : <div className="battle-sprite-placeholder" />
       }
     </div>
   );
@@ -306,39 +304,39 @@ export default function BattleViewport({
   aiSwIn,
 }) {
   return (
-    <div style={{ display:'flex', flexShrink:0, height:'420px', background:'var(--grey-900)', border:'1px solid var(--border)', overflow:'hidden' }}>
-
-      {/* Left panel 300px */}
-      <div style={{ width:'300px', flexShrink:0, background:'var(--grey-800)', borderRight:'2px solid var(--border-lt)' }} />
-
-      {/* Battle field */}
-      <div style={{ flex:1, position:'relative', overflow:'hidden' }}>
-        {/* Grid texture */}
-        <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(var(--grey-800) 1px, transparent 1px)', backgroundSize:'32px 32px', opacity:0.35 }} />
-
-        {/* Player bottom-left, sprite then HP bar */}
-        <div style={{ position:'absolute', bottom:'16px', left:'24px', display:'flex', alignItems:'flex-end', gap:'14px' }}>
-          <BattleSprite
-            battler={player} isBack={true}
-            lungeSignal={playerLunge} hitSignal={playerHit}
-            faintSignal={playerFaint} swOutSignal={playerSwOut} swInSignal={playerSwIn}
-          />
-          <AnimHPBar battler={player} hitSignal={playerHit} />
+    <>
+      {/* Desktop layout: absolute positioned sprites on a shared field */}
+      <div className="battle-viewport-desktop" style={{ display:'flex', flexShrink:0, height:'clamp(220px, 38vw, 420px)', background:'var(--grey-900)', border:'1px solid var(--border)', overflow:'hidden' }}>
+        <div className="battle-side-panel battle-side-left" />
+        <div style={{ flex:1, position:'relative', overflow:'hidden' }}>
+          <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(var(--grey-800) 1px, transparent 1px)', backgroundSize:'32px 32px', opacity:0.35 }} />
+          {/* Player bottom-left */}
+          <div style={{ position:'absolute', bottom:'12px', left:'12px', display:'flex', alignItems:'flex-end', gap:'10px', maxWidth:'calc(50% - 12px)' }}>
+            <BattleSprite battler={player} isBack={true} lungeSignal={playerLunge} hitSignal={playerHit} faintSignal={playerFaint} swOutSignal={playerSwOut} swInSignal={playerSwIn} />
+            <AnimHPBar battler={player} hitSignal={playerHit} />
+          </div>
+          {/* AI top-right */}
+          <div style={{ position:'absolute', top:'12px', right:'12px', display:'flex', alignItems:'flex-start', gap:'10px', maxWidth:'calc(50% - 12px)' }}>
+            <AnimHPBar battler={ai} hitSignal={aiHit} />
+            <BattleSprite battler={ai} isBack={false} lungeSignal={aiLunge} hitSignal={aiHit} faintSignal={aiFaint} swInSignal={aiSwIn} />
+          </div>
         </div>
-
-        {/* AI top-right, HP bar then sprite */}
-        <div style={{ position:'absolute', top:'16px', right:'24px', display:'flex', alignItems:'flex-start', gap:'14px' }}>
-          <AnimHPBar battler={ai} hitSignal={aiHit} />
-          <BattleSprite
-            battler={ai} isBack={false}
-            lungeSignal={aiLunge} hitSignal={aiHit}
-            faintSignal={aiFaint} swInSignal={aiSwIn}
-          />
-        </div>
+        <div className="battle-side-panel battle-side-right" />
       </div>
 
-      {/* Right panel 300px */}
-      <div style={{ width:'300px', flexShrink:0, background:'var(--grey-800)', borderLeft:'2px solid var(--border-lt)' }} />
-    </div>
+      {/* Mobile layout: AI row on top, player row on bottom, no overlap */}
+      <div className="battle-viewport-mobile">
+        {/* AI row: HP card on left, sprite on right */}
+        <div className="battle-viewport-row battle-viewport-row-ai">
+          <AnimHPBar battler={ai} hitSignal={aiHit} />
+          <BattleSprite battler={ai} isBack={false} lungeSignal={aiLunge} hitSignal={aiHit} faintSignal={aiFaint} swInSignal={aiSwIn} />
+        </div>
+        {/* Player row: sprite on left, HP card on right */}
+        <div className="battle-viewport-row battle-viewport-row-pl">
+          <BattleSprite battler={player} isBack={true} lungeSignal={playerLunge} hitSignal={playerHit} faintSignal={playerFaint} swOutSignal={playerSwOut} swInSignal={playerSwIn} />
+          <AnimHPBar battler={player} hitSignal={playerHit} />
+        </div>
+      </div>
+    </>
   );
 }

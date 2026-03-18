@@ -271,7 +271,7 @@ function FaintSwitchPopup({ team, onSwitch }) {
 // Clickable party bar shown at the bottom of the battle screen.
 function PartyStrip({ team, activeIdx, onSwitch, disabled }) {
   return (
-    <div style={{ background: 'var(--grey-900)', borderTop: '1px solid var(--border)', padding: '8px 12px', display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+    <div className="battle-party-strip">
       <span style={{ fontFamily: 'var(--font-display)', fontSize: '10px', letterSpacing: '0.12em', color: 'var(--grey-500)', textTransform: 'uppercase', flexShrink: 0 }}>Party</span>
       {team.map((poke, i) => {
         const isActive = i === activeIdx;
@@ -280,7 +280,7 @@ function PartyStrip({ team, activeIdx, onSwitch, disabled }) {
         const canClick = !disabled && !poke.fainted && !isActive;
         return (
           <div key={i} onClick={() => canClick && onSwitch(i)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '5px 8px', background: isActive ? 'var(--grey-700)' : 'var(--grey-800)', border: `1px solid ${isActive ? 'var(--border-lt)' : 'var(--border)'}`, cursor: canClick ? 'pointer' : 'default', opacity: poke.fainted ? 0.3 : disabled && !isActive ? 0.5 : 1, transition: 'all 0.15s', minWidth: '52px' }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '5px 8px', background: isActive ? 'var(--grey-700)' : 'var(--grey-800)', border: `1px solid ${isActive ? 'var(--border-lt)' : 'var(--border)'}`, cursor: canClick ? 'pointer' : 'default', opacity: poke.fainted ? 0.3 : disabled && !isActive ? 0.5 : 1, transition: 'all 0.15s', minWidth: '52px', flexShrink: 0 }}
             onMouseEnter={e => { if (canClick) e.currentTarget.style.borderColor = 'var(--grey-400)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = isActive ? 'var(--border-lt)' : 'var(--border)'; }}>
             {poke.sprite
@@ -634,7 +634,8 @@ export default function BattlePage({ team, setPage, opponentTeam = null, trainer
         aiSwIn={aiSwIn[1]}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: '200px', flexShrink: 0, overflow: 'hidden', gap: '1px', background: 'var(--border)' }}>
+      {/* Moves panel and battle console: side by side on desktop, stacked on mobile */}
+      <div className="battle-bottom-grid">
         <BattleMoves
           pokemon={playerPoke}
           moveData={mdc}
@@ -642,7 +643,10 @@ export default function BattlePage({ team, setPage, opponentTeam = null, trainer
           disabled={inputLocked}
           lockedMove={lockedMove}
         />
-        <BattleConsole log={log} />
+        {/* Wrapper gives the console a hard cap so it never expands on mobile */}
+        <div className="battle-console-wrap">
+          <BattleConsole log={log} />
+        </div>
       </div>
 
       <PartyStrip
@@ -651,7 +655,8 @@ export default function BattlePage({ team, setPage, opponentTeam = null, trainer
         onSwitch={handleSwitch}
         disabled={inputLocked || !!lockedMove}
       />
-      <div style={{ background:'var(--grey-900)', borderTop:'1px solid var(--border)', padding:'6px 12px', display:'flex', justifyContent:'flex-start' }}>
+      {/* Back button: left on desktop, centred on mobile via CSS class */}
+      <div className="battle-back-row">
         <BackBtn onClick={() => setPage('battlemode')} />
       </div>
     </div>

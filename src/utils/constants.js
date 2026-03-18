@@ -1,10 +1,9 @@
 /*
  * constants.js Shared constant data: type colours, type backgrounds,
- * and the complete Gen 1–5 Pokémon name lists used across the app.
+ * type accents, and the complete Gen 1–5 Pokémon name lists used across the app.
  */
 
-// Color Codes for diffrent types
-// Bright foreground colour for each type badge.
+/* Bright foreground colour for each type badge */
 export const TYPE_COLORS = {
   fire:     '#F08030',
   water:    '#6890F0',
@@ -26,8 +25,7 @@ export const TYPE_COLORS = {
   steel:    '#B8B8D0',
 };
 
-// Background colors for type badges (dark tinted versions)
-// Dark background tint for each type badge.
+/* Dark background tint for each type badge */
 export const TYPE_BG = {
   fire:'#7a2a10', water:'#1a3a6a', grass:'#1a3a12', electric:'#4a3a00',
   psychic:'#4a1028', ice:'#0a3a48', dragon:'#280e58', dark:'#1a1008',
@@ -36,8 +34,16 @@ export const TYPE_BG = {
   ghost:'#180a30', steel:'#283038',
 };
 
-// List of Gen 1 Pokemon
-// Pokémon name lists per generation (used for random teams and the bulk loader).
+/* Saturated accent colour used for move type labels and slot borders */
+export const TYPE_ACCENT = {
+  fire:'#e06030', water:'#4090d0', grass:'#50a030', electric:'#c0a820',
+  psychic:'#d03060', ice:'#30a0b0', dragon:'#6030c0', dark:'#706040',
+  fairy:'#c05070', normal:'#888', fighting:'#b03020', flying:'#6080a0',
+  poison:'#8030a0', ground:'#a07820', rock:'#908020', bug:'#60902a',
+  ghost:'#503088', steel:'#507088',
+};
+
+// Pokémon name lists per generation used for random teams and the bulk loader.
 export const GEN1_POKEMON = [
   'bulbasaur','ivysaur','venusaur','charmander','charmeleon','charizard',
   'squirtle','wartortle','blastoise','caterpie','metapod','butterfree',
@@ -64,7 +70,6 @@ export const GEN1_POKEMON = [
   'mewtwo','mew',
 ];
 
-// List of Gen 2 Pokemon
 export const GEN2_POKEMON = [
   'chikorita','bayleef','meganium','cyndaquil','quilava','typhlosion',
   'totodile','croconaw','feraligatr','sentret','furret','hoothoot','noctowl',
@@ -83,7 +88,6 @@ export const GEN2_POKEMON = [
   'tyranitar','lugia','ho-oh','celebi',
 ];
 
-// List of Gen 3 Pokemon
 export const GEN3_POKEMON = [
   'treecko','grovyle','sceptile','torchic','combusken','blaziken','mudkip',
   'marshtomp','swampert','poochyena','mightyena','zigzagoon','linoone',
@@ -107,7 +111,6 @@ export const GEN3_POKEMON = [
   'deoxys-normal',
 ];
 
-// List of Gen 4 Pokemon
 export const GEN4_POKEMON = [
   'turtwig','grotle','torterra','chimchar','monferno','infernape','piplup',
   'prinplup','empoleon','starly','staravia','staraptor','bidoof','bibarel',
@@ -127,7 +130,6 @@ export const GEN4_POKEMON = [
   'manaphy','darkrai','shaymin-land','arceus',
 ];
 
-// List of Gen 5 Pokemon
 export const GEN5_POKEMON = [
   'victini','snivy','servine','serperior','tepig','pignite','emboar','oshawott',
   'dewott','samurott','patrat','watchog','lillipup','herdier','stoutland',
@@ -154,8 +156,7 @@ export const GEN5_POKEMON = [
   'reshiram','zekrom','landorus-incarnate','kyurem','keldeo-ordinary','meloetta-aria','genesect',
 ];
 
-// Item List
-// Held items available in the team builder.
+/* Held items available in the team builder */
 export const ITEMS = [
   { name: 'Leftovers',    desc: 'Restores 1/16 HP each turn',                   },
   { name: 'Life Orb',     desc: 'Boosts moves 30%, but costs HP',               },

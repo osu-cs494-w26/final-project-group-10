@@ -14,7 +14,7 @@ const CARDS = [
   { key:'quiz', num:'04', title:'Quizzes',   subtitle:'Test Your Knowledge & Find Your Match',   desc:'How much do you know about Pokemon? Find your team now!',  accent:'#c8b820', bg:'#3a2c08' },
 ];
 
-// Single mode card with hover accent colour and "Select →" reveal.
+// Single mode card: compact on mobile, fuller on desktop.
 function HomeCard({ card, onClick }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -28,17 +28,17 @@ function HomeCard({ card, onClick }) {
         borderRight:  `1px solid ${hovered ? card.accent : 'var(--border)'}`,
         borderBottom: `1px solid ${hovered ? card.accent : 'var(--border)'}`,
         borderLeft:   `4px solid ${card.accent}`,
-        padding:'28px 28px', cursor:'pointer', display:'flex', flexDirection:'column',
-        gap:'10px', transition:'background 0.2s, border-color 0.2s, transform 0.15s',
-        transform: hovered ? 'translateY(-2px)' : 'none', position:'relative', minHeight:'180px',
+        padding:'clamp(8px, 2vw, 28px) clamp(6px, 1.5vw, 24px)',
+        cursor:'pointer', display:'flex', flexDirection:'column',
+        gap:'4px', transition:'background 0.2s, border-color 0.2s, transform 0.15s',
+        transform: hovered ? 'translateY(-2px)' : 'none', position:'relative', minWidth:0,
       }}>
-      <div style={{ position:'absolute', top:'12px', right:'14px', fontFamily:'var(--font-mono)', fontSize:'10px', color:card.accent, opacity:0.6, letterSpacing:'0.05em' }}>{card.num}</div>
-      <div>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:'18px', letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--white)', lineHeight:1.2, marginBottom:'4px' }}>{card.title}</div>
-        <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.1em', color:card.accent }}>{card.subtitle}</div>
+      <div style={{ position:'absolute', top:'6px', right:'7px', fontFamily:'var(--font-mono)', fontSize:'clamp(7px, 1.2vw, 10px)', color:card.accent, opacity:0.6 }}>{card.num}</div>
+      <div style={{ paddingRight:'14px' }}>
+        <div style={{ fontFamily:'var(--font-display)', fontSize:'clamp(11px, 2vw, 18px)', letterSpacing:'0.06em', textTransform:'uppercase', color:'var(--white)', lineHeight:1.2, marginBottom:'2px' }}>{card.title}</div>
+        <div style={{ fontFamily:'var(--font-mono)', fontSize:'clamp(7px, 1.2vw, 10px)', textTransform:'uppercase', letterSpacing:'0.06em', color:card.accent }}>{card.subtitle}</div>
       </div>
-      <div style={{ fontFamily:'var(--font-mono)', fontSize:'12px', color:'var(--grey-300)', lineHeight:1.7, flex:1 }}>{card.desc}</div>
-      <div style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:card.accent, letterSpacing:'0.08em', textTransform:'uppercase', opacity: hovered ? 1 : 0, transition:'opacity 0.15s' }}>Select →</div>
+      <div style={{ fontFamily:'var(--font-mono)', fontSize:'clamp(8px, 1.2vw, 11px)', color:card.accent, letterSpacing:'0.06em', textTransform:'uppercase', opacity: hovered ? 1 : 0, transition:'opacity 0.15s', marginTop:'2px' }}>→</div>
     </div>
   );
 }
@@ -46,7 +46,7 @@ function HomeCard({ card, onClick }) {
 // Renders the title, card grid, and welcome section.
 export default function HomePage({ setPage }) {
   return (
-    <div style={{ minHeight:'calc(100vh - var(--nav-h))', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-start', padding:'6rem 2rem 3rem', position:'relative' }}>
+    <div style={{ minHeight:'calc(100vh - var(--nav-h))', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-start', padding:'6rem 1rem 3rem', position:'relative' }}>
 
       {/* Title */}
       <div style={{ marginBottom:'2.5rem', textAlign:'center', animation:'fadeIn 0.4s ease both', position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center', zIndex:2 }}>
@@ -56,9 +56,8 @@ export default function HomePage({ setPage }) {
         </div>
       </div>
 
-      {/* Main black box cards + welcome + pikachu */}
-      <div style={{
-        maxWidth:'1100px', width:'100%',
+      {/* Main content box: full width on mobile, capped at 1100px on desktop */}
+      <div className="page-content-box" style={{
         background:'#000',
         border:'1px solid var(--border)',
         position:'relative', zIndex:2,
@@ -67,8 +66,8 @@ export default function HomePage({ setPage }) {
         overflow:'hidden',
       }}>
 
-        {/* Cards row */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'12px', padding:'24px 24px 20px' }}>
+        {/* Cards row: always 4 columns, shrink via clamp sizing inside each card */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'8px', padding:'16px' }}>
           {CARDS.map(card => (
             <HomeCard key={card.key} card={card} onClick={setPage} />
           ))}
@@ -77,8 +76,8 @@ export default function HomePage({ setPage }) {
         {/* Divider */}
         <div style={{ height:'1px', background:'var(--border)', margin:'0 24px' }} />
 
-        {/* Welcome + Pikachu row */}
-        <div style={{ display:'flex', alignItems:'flex-end', gap:'0', minHeight:'260px' }}>
+        {/* Welcome and Pikachu row. Stacks vertically on mobile. */}
+        <div className="home-welcome-row">
 
           {/* Welcome text */}
           <div style={{ flex:1, padding:'32px 36px 36px', display:'flex', flexDirection:'column', gap:'14px' }}>
@@ -91,11 +90,10 @@ export default function HomePage({ setPage }) {
             <p style={{ margin:0, fontFamily:'var(--font-mono)', fontSize:'13px', color:'var(--grey-300)', lineHeight:1.8, maxWidth:'480px' }}>
               Welcome to Pokeportal! This website is dedicated to all things Pokémon! You can look at the complete Pokédex, battle AI trainers, do the daily "Who's that Pokémon?" challenge or take a quiz to determine what Pokémon fits your personality type. Enjoy!
             </p>
-
           </div>
 
-          {/* Pikachu */}
-          <div style={{ flexShrink:0, display:'flex', alignItems:'flex-end', justifyContent:'center', padding:'0 48px', borderLeft:'1px solid var(--border)' }}>
+          {/* Pikachu image. Border is handled by the CSS class. */}
+          <div className="home-pikachu">
             <img
               src={PIKACHU_ART}
               alt="Pikachu"

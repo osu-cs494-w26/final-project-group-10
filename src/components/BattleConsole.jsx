@@ -20,8 +20,8 @@ export default function BattleConsole({ log }) {
       display:       'flex',
       flexDirection: 'column',
       overflow:      'hidden',
-      // Fixed height - does not grow infinitely
       height:        '100%',
+      minHeight:     0,
     }}>
       {/* Header */}
       <div style={{
