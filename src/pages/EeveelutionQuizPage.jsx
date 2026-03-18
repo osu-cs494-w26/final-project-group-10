@@ -151,18 +151,10 @@ export default function EeveelutionQuizPage({ setPage, setEeveelutionResult }) {
   // Initialize quiz: randomly select 10 questions
   useEffect(() => {
     setInitialLoading(true);
-    try {
-      console.log('eeveelutionQuizBank:', eeveelutionQuizBank);
-      const shuffled = [...eeveelutionQuizBank].sort(() => 0.5 - Math.random());
-      console.log('shuffled length:', shuffled.length);
-      const selected = shuffled.slice(0, 10);
-      console.log('selected length:', selected.length);
-      setQuestions(selected);
-    } catch (error) {
-      console.error('Error loading quiz:', error);
-    } finally {
-      setInitialLoading(false);
-    }
+    const shuffled = [...eeveelutionQuizBank].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 10);
+    setQuestions(selected);
+    setInitialLoading(false);
   }, []);
 
   const handleOptionSelect = (optionIndex) => {
@@ -191,11 +183,11 @@ export default function EeveelutionQuizPage({ setPage, setEeveelutionResult }) {
 
   const computeResult = (finalScores) => {
     setLoading(true);
-    
+
     // Find the Eeveelution with highest score
     let maxScore = -1;
-    let result = 'flareon'; // default
-    
+    let result = 'flareon';
+
     for (const [eeveelution, score] of Object.entries(finalScores)) {
       if (score > maxScore) {
         maxScore = score;
@@ -205,9 +197,9 @@ export default function EeveelutionQuizPage({ setPage, setEeveelutionResult }) {
         result = eeveelution;
       }
     }
-    
+
     // Set result and navigate
-    setEeveelutionResult({ 
+    setEeveelutionResult({
       eeveelution: result,
       details: eeveelutionDetails[result],
       sprite: eeveelutionSprites[result],
@@ -219,8 +211,8 @@ export default function EeveelutionQuizPage({ setPage, setEeveelutionResult }) {
 
   if (initialLoading) {
     return (
-      <div style={S.wrap}>
-        <div style={S.container}>
+      <div className="quiz-sub-wrap" style={S.wrap}>
+        <div className="quiz-sub-container" style={S.container}>
           <div style={S.title}>Loading Quiz...</div>
           <div style={S.loadingContainer}>
             <div style={S.loadingText}>Preparing your Eeveelution assessment</div>
@@ -233,15 +225,12 @@ export default function EeveelutionQuizPage({ setPage, setEeveelutionResult }) {
 
   if (questions.length === 0) {
     return (
-      <div style={S.wrap}>
-        <div style={S.container}>
+      <div className="quiz-sub-wrap" style={S.wrap}>
+        <div className="quiz-sub-container" style={S.container}>
           <div style={S.title}>Error</div>
           <div style={S.loadingContainer}>
             <div style={S.loadingText}>Could not load quiz questions</div>
-            <div style={{ color: 'red', marginBottom: '1rem' }}>
-              Check console for details.
-            </div>
-            <button 
+            <button
               style={{ ...S.option, marginTop: '1rem' }}
               onClick={() => window.location.reload()}
             >
@@ -253,12 +242,12 @@ export default function EeveelutionQuizPage({ setPage, setEeveelutionResult }) {
     );
   }
 
-  const currentQuestion = questions[currentIndex];
+  const currentQ = questions[currentIndex];
   const progress = `${currentIndex + 1} / ${questions.length}`;
 
   return (
-    <div style={S.wrap}>
-      <div style={S.container}>
+    <div className="quiz-sub-wrap" style={S.wrap}>
+      <div className="quiz-sub-container" style={S.container}>
         <button
           onClick={() => setPage('quiz')}
           style={{
@@ -273,16 +262,17 @@ export default function EeveelutionQuizPage({ setPage, setEeveelutionResult }) {
             textTransform: 'uppercase',
             transition: 'all 0.15s',
             marginBottom: '1.5rem',
+            display: 'block',
           }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'none'}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
         >
           ← Back to Quizzes
         </button>
 
         <div style={S.title}>Which Eeveelution Are You?</div>
         <div style={S.progress}>Question {progress}</div>
-        
+
         {loading ? (
           <div style={S.loadingContainer}>
             <div style={S.loadingText}>Analyzing your personality...</div>
@@ -290,9 +280,9 @@ export default function EeveelutionQuizPage({ setPage, setEeveelutionResult }) {
           </div>
         ) : (
           <>
-            <div style={S.question}>{currentQuestion.text}</div>
+            <div style={S.question}>{currentQ.question}</div>
             <div style={S.options}>
-              {currentQuestion.options.map((option, idx) => (
+              {currentQ.options.map((option, idx) => (
                 <button
                   key={idx}
                   style={S.option}
