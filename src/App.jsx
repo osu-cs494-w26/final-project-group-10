@@ -1,7 +1,7 @@
 /*
  * App.jsx Root component. Manages auth state, team state, and renders
  * all routes via React Router. The parameterized /battle/trainer/:trainerId
- * route drives the trainer detail + team-select flow.
+ * route drives the trainer detail + team select flow.
  */
 
 import React, { useState, useEffect, useLayoutEffect } from 'react';
@@ -72,7 +72,7 @@ function AppShell({ user, signOut }) {
 
   
   // Shows the scrolling Pokédex background on home, mode select, trainer gallery,
-  // Pokédex, WTP, and quiz sections. Excluded on active battle routes and pages with their own full-screen layouts.
+  // Pokédex, WTP, and quiz sections. Excluded on active battle routes and pages with their own full screen layouts.
   const showBackground = path === '/' || path === '/battle'
     || path === '/battle/trainer'
     || (path.startsWith('/battle/trainer/') && path !== '/battle/trainer-fight')
@@ -103,9 +103,11 @@ function AppShell({ user, signOut }) {
       personality:         '/quiz/personality',
       'personality-result':'/quiz/personality/result',
       pokemonquiz:         '/quiz/pokemon',
-      'pokemon-result':    '/quiz/pokemon/result',
+      'pokemon-result':        '/quiz/pokemon/result',
+      'pokemon-quiz-result':    '/quiz/pokemon/result',
       evolutionquiz:       '/quiz/evolution',
-      'evolution-result':  '/quiz/evolution/result',
+      'evolution-result':       '/quiz/evolution/result',
+      'evolution-quiz-result':  '/quiz/evolution/result',
     };
     navigate(MAP[key] || '/');
   };
@@ -140,7 +142,7 @@ function AppShell({ user, signOut }) {
         {/* Battle routes */}
         <Route path="/battle"         element={<BattleModePage setPage={setPage} setBattleMode={setBattleMode} />} />
         <Route path="/battle/select"  element={<SelectPage     setPage={setPage} team={team} setTeam={setTeam} />} />
-        <Route path="/team/build"     element={<SaveTeamPage   setPage={setPage} user={user} />} />
+        <Route path="/team/build"     element={<SaveTeamPage   setPage={setPage} user={user} initialTeam={team} />} />
 
         {/* Trainer gallery */}
         <Route path="/battle/trainer" element={
@@ -219,8 +221,31 @@ function AppShell({ user, signOut }) {
                 result={quizResult}
                 setPage={setPage}
                 clearQuizResult={() => setQuizResult(null)}
-                onSaveTeam={(team) => {
-                  setTeam(team);
+                onSaveTeam={(rawTeam) => {
+                  const mapped = rawTeam.map(p => ({
+                    name:    p.name,
+                    id:      p.id,
+                    moves:   (p.moves || []).slice(0, 4),
+                    item:    null,
+                    ability: p.abilities?.[0] || null,
+                    evs: { hp:0, attack:0, defense:0, 'special-attack':0, 'special-defense':0, speed:0 },
+                    ivs: { hp:31, attack:31, defense:31, 'special-attack':31, 'special-defense':31, speed:31 },
+                    cachedData: {
+                      id:             p.id,
+                      name:           p.name,
+                      sprite:         p.staticSprite || p.sprite,
+                      spriteBack:     p.spriteBack,
+                      animatedSprite: p.animatedSprite,
+                      staticSprite:   p.staticSprite || p.sprite,
+                      types:          p.types || [],
+                      stats:          (p.stats || []).map(s => ({ name: s.name, value: s.value ?? s.base_stat ?? 0 })),
+                      abilities:      (p.abilities || []).map(a => ({ name: a, isHidden: false, desc: '' })),
+                      moves:          p.moves || [],
+                      height:         p.height,
+                      weight:         p.weight,
+                    },
+                  }));
+                  setTeam(mapped);
                   navigate('/team/build');
                 }}
               />
@@ -231,12 +256,12 @@ function AppShell({ user, signOut }) {
         <Route path="/quiz/pokemon" element={
           <PokemonQuizPage
             setPage={setPage}
-            setResult={setPokemonQuizResult}
+            setPokemonQuizResult={setPokemonQuizResult}
           />
         } />
         <Route path="/quiz/pokemon/result" element={
           pokemonQuizResult
-            ? <PokemonQuizResultPage result={pokemonQuizResult} setPage={setPage} />
+            ? <PokemonQuizResultPage result={pokemonQuizResult} setPage={setPage} clearResult={() => setPokemonQuizResult(null)} />
             : <Navigate to="/quiz/pokemon" replace />
         } />
 
@@ -244,12 +269,12 @@ function AppShell({ user, signOut }) {
         <Route path="/quiz/evolution" element={
           <EvolutionQuizPage
             setPage={setPage}
-            setResult={setEvolutionQuizResult}
+            setEvolutionQuizResult={setEvolutionQuizResult}
           />
         } />
         <Route path="/quiz/evolution/result" element={
           evolutionQuizResult
-            ? <EvolutionQuizResultPage result={evolutionQuizResult} setPage={setPage} />
+            ? <EvolutionQuizResultPage result={evolutionQuizResult} setPage={setPage} clearResult={() => setEvolutionQuizResult(null)} />
             : <Navigate to="/quiz/evolution" replace />
         } />
 

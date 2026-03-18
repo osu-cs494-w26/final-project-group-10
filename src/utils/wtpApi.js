@@ -109,7 +109,6 @@ async function getDailySpeciesCandidate(dateKey, attempt = 0) {
   return getSpeciesById(speciesId);
 }
 
-// Convert a generation identifier from the PokeAPI (e.g., 'generation-i') into a more human-readable format (e.g., 'Generation I') for display purposes in the game.
 function parseGenerationLabel(generationName) {
   return generationName
     .replace('generation-', 'Generation ')

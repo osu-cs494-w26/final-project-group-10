@@ -1,5 +1,5 @@
 /*
- * usePokemonData.js Module-level cache and React hook for Pokémon and move data.
+ * usePokemonData.js Module level cache and React hook for Pokémon and move data.
  * fetchPokeData / fetchMoveData hit PokeAPI once then serve from cache forever.
  * Uses Generation V animated sprites as the primary sprite with a static fallback.
  * pokeData is aliased to pokeCache for component backwards compatibility.
@@ -11,6 +11,7 @@ import { useState, useCallback, useRef } from 'react';
 export const pokeCache = {};
 const moveCache    = {};  /* moveName -> { type, power, pp, category, effect, flavor } */
 const abilityCache = {};  /* abilityUrl -> { desc } */
+
 
 /* Fetch full pokemon data from PokeAPI and cache it globally for the session */
 export async function fetchPokeData(name) {

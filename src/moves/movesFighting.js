@@ -68,21 +68,6 @@ export function registerFightingMoves() {
   registerMove('dynamic punch', {
     onHit: (ctx) => inflictConfusion(ctx, ctx.defender),
   });
-  MOVE_EFFECTS['final gambit'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      const dmg = ctx.attacker.hp;
-      ctx.attacker.hp = 0; ctx.attacker.fainted = true;
-      ctx.defender.hp = Math.max(0, ctx.defender.hp - dmg);
-      if (ctx.defender.hp === 0) ctx.defender.fainted = true;
-      ctx.log.push(`${ctx.attacker.name} sacrificed itself for ${dmg} damage!`);
-      if (ctx.defender.fainted) ctx.log.push(`${ctx.defender.name} fainted!`);
-      ctx.absorbed = true;
-    },
-  };
-  registerMove('flying press', {
-    onUse: (ctx) => { ctx.moveData = { ...(ctx.moveData || {}), extraType: 'flying' }; },
-  });
   registerMove('focus blast', {
     secondary: { stat: 'spdef', stages: -1, target: 'foe', chance: 10 },
   });
@@ -118,32 +103,15 @@ export function registerFightingMoves() {
     };
   });
   registerMove('karate chop', { highCrit: true });
-  registerMove('low kick');
   registerMove('low sweep', {
     secondary: { stat: 'spd', stages: -1, target: 'foe', chance: 100 },
   });
   registerMove('mach punch', {
     onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} struck first! (Priority +1)`),
   });
-  MOVE_EFFECTS['mat block'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (!ctx.attacker.volatile) ctx.attacker.volatile = {};
-      ctx.attacker.volatile.protect = true;
-      ctx.log.push(`${ctx.attacker.name} blocked incoming moves with a mat!`);
-    },
-  };
   registerMove('power-up punch', {
     onHit: (ctx) => statChange(ctx, 'atk', 1, 'self'),
   });
-  MOVE_EFFECTS['quick guard'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (!ctx.attackerSide) ctx.attackerSide = {};
-      ctx.attackerSide.quickGuard = true;
-      ctx.log.push(`${ctx.attacker.name}'s team is protected from priority moves!`);
-    },
-  };
   registerMove('revenge', {
     onUse: (ctx) => {
       if ((ctx.attacker.volatile?.lastDamageTaken ?? 0) > 0) {

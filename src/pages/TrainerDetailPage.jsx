@@ -1,7 +1,7 @@
 /*
  * TrainerDetailPage.jsx Parameterized route: /battle/trainer/:trainerId
  * Reads the trainerId from the URL via useParams(), looks up the trainer
- * in the shared TRAINERS array, and renders the full team-select challenge flow.
+ * in the shared TRAINERS array, and renders the full team select challenge flow.
  * This is the parameterized route satisfying the CS 494 routing requirement.
  */
 

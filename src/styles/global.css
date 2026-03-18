@@ -54,7 +54,8 @@ body {
 @keyframes flash       { 0%,100%{opacity:1} 50%{opacity:0.1} }
 @keyframes pulse       { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes hpAnim      { from{width:var(--hp-from)} to{width:var(--hp-to)} }
-@keyframes slideUp     { from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes slideUp        { from{transform:translateY(8px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes loadingPulse   { 0%,100%{width:15%} 50%{width:85%} }
 
 .animate-fadeIn     { animation: fadeIn     0.3s ease both; }
 .animate-fadeInFast { animation: fadeInFast 0.15s ease both; }
@@ -231,4 +232,80 @@ body {
 
   /* Trainer cards: single column on very small screens */
   .trainer-gallery-grid { grid-template-columns: 1fr; }
+}
+
+/* WTP mode selection: 4 standard cards on desktop, 2 on tablet, 1 on mobile */
+.wtp-mode-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+/* WTP game page: main panel + hint panel side by side on desktop, single column when no hints */
+.wtp-game-layout      { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr); gap: 18px; align-items: start; }
+.wtp-game-layout-full { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+
+/* WTP info bar: mode card + setup card side by side on desktop */
+.wtp-mode-card  { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; padding: 12px 16px; min-width: 240px; flex: 1 1 0; }
+.wtp-setup-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; min-width: 360px; flex: 1 1 0; }
+.wtp-info-bar   { display: flex; align-items: stretch; gap: 16px; flex-wrap: wrap; justify-content: flex-start; flex: 1 1 0; }
+
+@media (max-width: 768px) {
+  /* Mode grid: 2 columns on tablet */
+  .wtp-mode-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Game layout: stack hint panel below main panel */
+  .wtp-game-layout { grid-template-columns: 1fr; }
+
+  /* Info bar cards: drop min-widths and stack */
+  .wtp-mode-card  { min-width: 0; width: 100%; }
+  .wtp-setup-card { min-width: 0; width: 100%; flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  /* Mode grid: single column on phone */
+  .wtp-mode-grid { grid-template-columns: 1fr; }
+}
+
+/* WTP setup modal: two columns on desktop, single column on mobile */
+.wtp-setup-grid { display: grid; gap: 18px; }
+
+/* WTP mode cards: smaller padding and font on small screens so more fit per row */
+@media (max-width: 768px) {
+  .wtp-setup-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 480px) {
+  /* Shrink GameModeCard padding and title size so cards fit 2-per-row on phone */
+  .wtp-mode-card-inner { padding: 20px 14px !important; min-height: 180px !important; gap: 10px !important; }
+  .wtp-mode-card-inner > div:nth-child(2) > div:first-child { font-size: 20px !important; }
+  .wtp-mode-card-inner > div:nth-child(3) { font-size: 11px !important; }
+}
+
+/* Pokédex popup card: fixed width on desktop, fluid on mobile */
+.pokedex-card        { width: 580px; display: flex; border: 3px solid black; border-radius: 12px; overflow: hidden; box-shadow: 6px 6px 0 black; }
+.pokedex-card-left   { width: 260px; flex-shrink: 0; }
+.pokedex-info-wrap   { margin-top: 24px; width: 580px; display: flex; flex-direction: column; gap: 16px; }
+
+@media (max-width: 640px) {
+  .pokedex-card      { width: 100%; flex-direction: column; }
+  .pokedex-card-left { width: 100%; }
+  .pokedex-info-wrap { width: 100%; }
+}
+
+/* Quiz hub: 3 columns on desktop, 1 column on mobile (matching battle page) */
+.quiz-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+/* Quiz sub-pages: responsive container padding */
+.quiz-sub-wrap { min-height: calc(100vh - var(--nav-h)); padding: clamp(1rem, 3vw, 2rem); }
+.quiz-sub-container { max-width: 700px; margin: 0 auto; background: var(--grey-900); border: 1px solid var(--border); padding: clamp(1rem, 3vw, 2rem); }
+.quiz-result-container { max-width: 600px; width: 100%; background: var(--grey-900); border: 1px solid var(--border); padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem); text-align: center; }
+.quiz-btn-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* Personality result: wide container */
+.personality-result-container { max-width: 900px; margin: 0 auto; background: var(--grey-900); border: 1px solid var(--border); padding: clamp(1rem, 3vw, 2rem); }
+
+/* Homepage: more space between title and main box */
+.home-main-gap { margin-top: 3rem; }
+
+@media (max-width: 768px) {
+  .quiz-card-grid { grid-template-columns: 1fr; }
+  .quiz-btn-row { flex-direction: column; align-items: stretch; }
+  .quiz-btn-row button { width: 100%; }
 }

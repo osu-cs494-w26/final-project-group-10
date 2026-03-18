@@ -1,8 +1,8 @@
 /*
- * ChangeMovePopup.jsx Full-screen modal for editing a Pokémon's four moves.
- * Contains the three sub-components it owns exclusively:
- *   CompactDropSlot  compact single-row slot used on mobile
- *   DropSlot         full-height slot used on desktop
+ * ChangeMovePopup.jsx Full screen modal for editing a Pokémon's four moves.
+ * Contains the three sub components it owns exclusively:
+ *   CompactDropSlot  compact single row slot used on mobile
+ *   DropSlot         full height slot used on desktop
  *   MoveCard         draggable and clickable card in the move browser grid
  */
 
@@ -96,7 +96,7 @@ function DropSlot({ move, idx, onDrop, onRemove, dragOver, onDragOver, onDragLea
 }
 
 /* Draggable/clickable move card in the move browser grid */
-function MoveCard({ move, onDragStart, onDragEnd, isDragging, isSelected, onClick }) {
+function MoveCard({ move, onDragStart, onDragEnd, isDragging, isSelected, onClick, showDesc }) {
   const [data, setData] = useState(null);
   useEffect(() => { fetchMoveData(move).then(setData); }, [move]);
   const type     = data?.type || null;
@@ -125,6 +125,11 @@ function MoveCard({ move, onDragStart, onDragEnd, isDragging, isSelected, onClic
         {data?.accuracy > 0 && <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--white)', background:'rgba(0,0,0,0.4)', padding:'1px 5px' }}>ACC {data.accuracy}%</span>}
         {data?.pp           && <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--white)', background:'rgba(0,0,0,0.4)', padding:'1px 5px' }}>PP {data.pp}</span>}
       </div>
+      {showDesc && data?.effect && (
+        <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--grey-400)', lineHeight:1.45, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', marginTop:'2px' }}>
+          {data.effect}
+        </div>
+      )}
     </div>
   );
 }
@@ -268,7 +273,7 @@ export default function ChangeMovePopup({ pokemon, currentMoves: initMoves, onSa
                 : <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px' }}>
                     {filtered.map(m => (
                       <MoveCard key={m} move={m} isDragging={draggedMove === m} isSelected={selectedCard === m}
-                        onDragStart={setDraggedMove} onDragEnd={() => setDraggedMove(null)} onClick={() => handleCardClick(m)} />
+                        onDragStart={setDraggedMove} onDragEnd={() => setDraggedMove(null)} onClick={() => handleCardClick(m)} showDesc={false} />
                     ))}
                   </div>
               }
@@ -320,7 +325,7 @@ export default function ChangeMovePopup({ pokemon, currentMoves: initMoves, onSa
                   : <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'10px' }}>
                       {filtered.map(m => (
                         <MoveCard key={m} move={m} isDragging={draggedMove === m} isSelected={selectedCard === m}
-                          onDragStart={setDraggedMove} onDragEnd={() => setDraggedMove(null)} onClick={() => handleCardClick(m)} />
+                          onDragStart={setDraggedMove} onDragEnd={() => setDraggedMove(null)} onClick={() => handleCardClick(m)} showDesc={true} />
                       ))}
                     </div>
                 }

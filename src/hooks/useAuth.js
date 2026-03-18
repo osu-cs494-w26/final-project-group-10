@@ -1,6 +1,6 @@
 /*
- * useAuth.js Authentication hook. Wraps Supabase auth for sign-in,
- * sign-up, sign-out, and password reset. Exposes the current user object.
+ * useAuth.js Authentication hook. Wraps Supabase auth for sign in,
+ * sign up, sign out, and password reset. Exposes the current user object.
  */
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient.js';

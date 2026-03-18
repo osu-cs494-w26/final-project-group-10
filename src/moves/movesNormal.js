@@ -122,24 +122,7 @@ export function registerNormalMoves() {
   registerMove('flail',       { onUse: lowHpPower });
   registerMove('frustration', { onUse: (ctx) => { ctx.moveData = { ...(ctx.moveData || {}), power: 102 }; } });
   registerMove('return',      { onUse: (ctx) => { ctx.moveData = { ...(ctx.moveData || {}), power: 102 }; } });
-  registerMove('last resort');
   registerMove('trump card');
-  registerMove('natural gift');
-  MOVE_EFFECTS['present'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (Math.random() < 0.33) {
-        ctx.defender.hp = Math.min(ctx.defender.maxHp, ctx.defender.hp + 80);
-        ctx.log.push(`${ctx.attacker.name} healed ${ctx.defender.name} with a gift!`);
-      } else {
-        const pwr = [40, 80, 120][Math.floor(Math.random() * 3)];
-        ctx.moveData = { ...(ctx.moveData || {}), power: pwr };
-        ctx.log.push(`Present's power is ${pwr}!`);
-      }
-      ctx.absorbed = Math.random() < 0.33;
-    },
-  };
-  registerMove('pay day', { onUse: (ctx) => ctx.log.push('Coins scattered everywhere!') });
   ['self-destruct', 'explosion'].forEach(m => {
     MOVE_EFFECTS[m] = {
       operational: true,
@@ -261,16 +244,6 @@ export function registerNormalMoves() {
   MOVE_EFFECTS['recover']      = selfHeal(0.5);
   MOVE_EFFECTS['slack off']    = selfHeal(0.5);
   MOVE_EFFECTS['soft-boiled']  = selfHeal(0.5);
-  MOVE_EFFECTS['morning sun'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      const w = ctx.weather?.type;
-      const ratio = w === 'sun' ? 2 / 3 : w ? 0.25 : 0.5;
-      const heal = Math.floor(ctx.attacker.maxHp * ratio);
-      ctx.attacker.hp = Math.min(ctx.attacker.maxHp, ctx.attacker.hp + heal);
-      ctx.log.push(`${ctx.attacker.name} restored ${heal} HP!`);
-    },
-  };
   MOVE_EFFECTS['wish'] = {
     operational: true, power: null,
     onUse: (ctx) => {
@@ -311,38 +284,6 @@ export function registerNormalMoves() {
       ctx.attacker.volatile.raging = true;
     },
   });
-  MOVE_EFFECTS['stockpile'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (!ctx.attacker.volatile) ctx.attacker.volatile = {};
-      const n = ctx.attacker.volatile.stockpile || 0;
-      if (n >= 3) { ctx.log.push('But it can\'t store any more!'); return; }
-      ctx.attacker.volatile.stockpile = n + 1;
-      statChange(ctx, 'def',   1, 'self'); statChange(ctx, 'spdef', 1, 'self');
-      ctx.log.push(`${ctx.attacker.name} stored energy! (${ctx.attacker.volatile.stockpile})`);
-    },
-  };
-  MOVE_EFFECTS['spit up'] = {
-    operational: true,
-    onUse: (ctx) => {
-      const n = ctx.attacker.volatile?.stockpile ?? 0;
-      if (n === 0) { ctx.log.push('But it failed! (no Stockpile)'); ctx.absorbed = true; return; }
-      ctx.moveData = { ...(ctx.moveData || {}), power: n * 100 };
-      ctx.attacker.volatile.stockpile = 0;
-    },
-  };
-  MOVE_EFFECTS['swallow'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      const n = ctx.attacker.volatile?.stockpile ?? 0;
-      if (n === 0) { ctx.log.push('But it failed! (no Stockpile)'); return; }
-      const ratios = [0.25, 0.5, 1.0];
-      const heal = Math.floor(ctx.attacker.maxHp * ratios[n - 1]);
-      ctx.attacker.hp = Math.min(ctx.attacker.maxHp, ctx.attacker.hp + heal);
-      ctx.attacker.volatile.stockpile = 0;
-      ctx.log.push(`${ctx.attacker.name} swallowed its stockpile and restored ${heal} HP!`);
-    },
-  };
   registerMove('echoed voice', {
     onUse: (ctx) => {
       if (!ctx.attacker.volatile) ctx.attacker.volatile = {};
@@ -385,7 +326,6 @@ export function registerNormalMoves() {
     },
   };
   MOVE_EFFECTS['supersonic']    = { operational: true, power: null, onUse: (ctx) => inflictConfusion(ctx, ctx.defender) };
-  MOVE_EFFECTS['teeter dance']  = { operational: true, power: null, onUse: (ctx) => { inflictConfusion(ctx, ctx.defender); inflictConfusion(ctx, ctx.attacker); } };
   MOVE_EFFECTS['swagger']       = { operational: true, power: null, onUse: (ctx) => { statChange(ctx, 'atk', 2, 'foe'); inflictConfusion(ctx, ctx.defender); } };
   MOVE_EFFECTS['glare'] = {
     operational: true, power: null,
@@ -416,12 +356,10 @@ export function registerNormalMoves() {
       ctx.log.push(`${ctx.attacker.name} braced itself!`);
     },
   };
-  ['false swipe', 'hold back'].forEach(m => {
-    registerMove(m, {
-      onHit: (ctx) => {
-        if (ctx.defender.hp <= 0) { ctx.defender.hp = 1; ctx.defender.fainted = false; }
-      },
-    });
+  registerMove('false swipe', {
+    onHit: (ctx) => {
+      if (ctx.defender.hp <= 0) { ctx.defender.hp = 1; ctx.defender.fainted = false; }
+    },
   });
   MOVE_EFFECTS['feint'] = {
     operational: true, power: null,
@@ -469,10 +407,7 @@ export function registerNormalMoves() {
     },
   };
 
-  MOVE_EFFECTS['camouflage']   = { operational: true, power: null, onUse: (ctx) => { ctx.attacker.types = ['normal']; ctx.log.push(`${ctx.attacker.name} blended in!`); } };
   MOVE_EFFECTS['celebrate']    = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} is celebrating! 🎉`) };
-  MOVE_EFFECTS['conversion']   = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} changed its type to match its first move!`) };
-  MOVE_EFFECTS['conversion 2'] = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} changed its type to resist the foe's last move!`) };
   MOVE_EFFECTS['copycat']      = { operational: true, power: null, onUse: (ctx) => { const last = ctx.defender.volatile?.lastMove; if (!last) { ctx.log.push('But it failed!'); return; } ctx.mirrorMove = last; ctx.log.push(`${ctx.attacker.name} copied ${last}!`); } };
 
   MOVE_EFFECTS['disable'] = {
@@ -497,10 +432,8 @@ export function registerNormalMoves() {
     },
   };
 
-  MOVE_EFFECTS['entrainment'] = { operational: true, power: null, onUse: (ctx) => { ctx.defender.ability = ctx.attacker.ability; ctx.log.push(`${ctx.defender.name}'s ability became ${ctx.attacker.ability}!`); } };
-  MOVE_EFFECTS['follow me']   = { operational: true, power: null, onUse: (ctx) => { if (!ctx.attacker.volatile) ctx.attacker.volatile = {}; ctx.attacker.volatile.followMe = true; ctx.log.push(`${ctx.attacker.name} became the center of attention!`); } };
 
-  MOVE_EFFECTS['foresight'] = {
+  MOVE_EFFECTS['odor sleuth'] = {
     operational: true, power: null,
     onUse: (ctx) => {
       if (!ctx.defender.volatile) ctx.defender.volatile = {};
@@ -508,41 +441,22 @@ export function registerNormalMoves() {
       ctx.log.push(`${ctx.defender.name} was identified! Ghost immunity to Normal/Fighting removed.`);
     },
   };
-  MOVE_EFFECTS['odor sleuth'] = { ...MOVE_EFFECTS['foresight'] };
 
-  MOVE_EFFECTS['happy hour']    = { operational: true, power: null, onUse: (ctx) => ctx.log.push('Everyone is happy! Prize money doubled!') };
-  MOVE_EFFECTS['heal bell']     = { operational: true, power: null, onUse: (ctx) => { const team = ctx.attackerTeam ?? [ctx.attacker]; team.forEach(p => { p.status = 'none'; }); ctx.log.push('A bell chimed and all status conditions were healed!'); } };
-  MOVE_EFFECTS['helping hand']  = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} is ready to help!`) };
-  MOVE_EFFECTS['hidden power']  = { operational: true, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used Hidden Power!`) };
-  MOVE_EFFECTS['hold hands']    = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} held hands with an ally!`) };
-  MOVE_EFFECTS['judgment']      = { operational: true, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used Judgment!`) };
-  MOVE_EFFECTS['lock-on']       = { operational: true, power: null, onUse: (ctx) => { if (!ctx.attacker.volatile) ctx.attacker.volatile = {}; ctx.attacker.volatile.lockOn = true; ctx.log.push(`${ctx.attacker.name} is locked on!`); } };
   MOVE_EFFECTS['lucky chant']   = { operational: true, power: null, onUse: (ctx) => { if (!ctx.attackerSide) ctx.attackerSide = {}; ctx.attackerSide.luckyChant = 5; ctx.log.push('The Lucky Chant shielded the team from critical hits!'); } };
   MOVE_EFFECTS['me first']      = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used the foe's move with 1.5× power!`) };
   MOVE_EFFECTS['metronome']     = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} waggled a finger and used a random move!`) };
   MOVE_EFFECTS['mimic']         = { operational: true, power: null, onUse: (ctx) => { const last = ctx.defender.volatile?.lastMove; if (!last) { ctx.log.push('But it failed!'); return; } ctx.log.push(`${ctx.attacker.name} mimicked ${last}!`); } };
-  MOVE_EFFECTS['mind reader']   = { operational: true, power: null, onUse: (ctx) => { if (!ctx.attacker.volatile) ctx.attacker.volatile = {}; ctx.attacker.volatile.lockOn = true; ctx.log.push(`${ctx.attacker.name} read the foe's mind!`); } };
-  MOVE_EFFECTS['nature power']  = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used a terrain-based move!`) };
-  MOVE_EFFECTS['pain split']    = { operational: true, power: null, onUse: (ctx) => { const avg = Math.floor((ctx.attacker.hp + ctx.defender.hp) / 2); ctx.attacker.hp = Math.min(ctx.attacker.maxHp, avg); ctx.defender.hp = Math.min(ctx.defender.maxHp, avg); ctx.log.push(`Both Pokémon's HP became ${avg}!`); } };
-  MOVE_EFFECTS['perish song']   = { operational: true, power: null, onUse: (ctx) => { if (!ctx.attacker.volatile) ctx.attacker.volatile = {}; if (!ctx.defender.volatile) ctx.defender.volatile = {}; ctx.attacker.volatile.perishCount = 3; ctx.defender.volatile.perishCount = 3; ctx.log.push('Both Pokémon will faint in 3 turns!'); } };
   MOVE_EFFECTS['psych up']      = { operational: true, power: null, onUse: (ctx) => { ctx.attacker.stages = { ...(ctx.defender.stages || {}) }; ctx.log.push(`${ctx.attacker.name} copied the foe's stat changes!`); } };
   MOVE_EFFECTS['rapid spin']    = { operational: true, onUse: (ctx) => { statChange(ctx, 'spd', 1, 'self'); if (ctx.attackerSide) { ctx.attackerSide.spikes = 0; ctx.attackerSide.stealthRock = false; ctx.attackerSide.toxicSpikes = 0; ctx.attackerSide.stickyWeb = false; } ctx.log.push(`${ctx.attacker.name} spun away hazards and raised its Speed!`); } };
-  MOVE_EFFECTS['recycle']       = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} recycled its used item!`) };
-  MOVE_EFFECTS['reflect type']  = { operational: true, power: null, onUse: (ctx) => { ctx.attacker.types = [...(ctx.defender.types || ['normal'])]; ctx.log.push(`${ctx.attacker.name} became ${ctx.attacker.types.join('/')} type!`); } };
   MOVE_EFFECTS['refresh']       = { operational: true, power: null, onUse: (ctx) => { if (['psn', 'tox', 'par', 'brn'].includes(ctx.attacker.status)) { ctx.attacker.status = 'none'; ctx.log.push(`${ctx.attacker.name}'s status was cured!`); } else { ctx.log.push('But it failed!'); } } };
   MOVE_EFFECTS['retaliate']     = { operational: true, onUse: (ctx) => { const pwr = ctx.attackerSide?.teamFaintedLastTurn ? 140 : 70; ctx.moveData = { ...(ctx.moveData || {}), power: pwr }; if (pwr === 140) ctx.log.push('Retaliate doubled in power!'); } };
   MOVE_EFFECTS['safeguard']     = { operational: true, power: null, onUse: (ctx) => { if (!ctx.attackerSide) ctx.attackerSide = {}; ctx.attackerSide.safeguard = 5; ctx.log.push(`${ctx.attacker.name}'s team is protected from status!`); } };
-  registerMove('secret power');
-  MOVE_EFFECTS['simple beam']   = { operational: true, power: null, onUse: (ctx) => { ctx.defender.ability = 'simple'; ctx.log.push(`${ctx.defender.name}'s ability became Simple!`); } };
-  MOVE_EFFECTS['sketch']        = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} sketched the foe's move permanently!`) };
   MOVE_EFFECTS['sleep talk']    = { operational: true, power: null, onUse: (ctx) => { if (ctx.attacker.status !== 'slp') { ctx.log.push('But it failed!'); return; } ctx.log.push(`${ctx.attacker.name} used a random move while sleeping!`); } };
   MOVE_EFFECTS['smelling salts'] = { operational: true, onUse: (ctx) => { const doubled = ctx.defender.status === 'par'; ctx.moveData = { ...(ctx.moveData || {}), power: doubled ? 140 : 70 }; if (doubled) { ctx.defender.status = 'none'; ctx.log.push('Smelling Salts doubled in power and cured paralysis!'); } } };
   MOVE_EFFECTS['snore']         = { operational: true, onUse: (ctx) => { if (ctx.attacker.status !== 'slp') { ctx.log.push('But it failed!'); ctx.absorbed = true; return; } }, flinchChance: 30 };
   MOVE_EFFECTS['splash']        = { operational: true, power: null, onUse: (ctx) => ctx.log.push('But nothing happened!') };
   MOVE_EFFECTS['swift']         = { operational: true, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} fired a swift star!`) };
-  MOVE_EFFECTS['techno blast']  = { operational: true, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used Techno Blast!`) };
   MOVE_EFFECTS['transform']     = { operational: true, power: null, onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} transformed into ${ctx.defender.name}!`) };
-  MOVE_EFFECTS['weather ball']  = { operational: true, onUse: (ctx) => { const w = ctx.weather?.type; const pwr = w ? 100 : 50; ctx.moveData = { ...(ctx.moveData || {}), power: pwr }; ctx.log.push(`Weather Ball's power is ${pwr}!`); } };
   registerMove('facade', {
     onUse: (ctx) => {
       if (['brn', 'psn', 'tox', 'par'].includes(ctx.attacker.status)) {

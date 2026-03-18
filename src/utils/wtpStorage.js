@@ -114,7 +114,7 @@ function accumulateStats(base, delta) {
 }
 
 // Merges two stats objects, summing additive fields and taking the max of best scores/streaks. 
-// If both have roundsPlayed > 0, currentStreak is reset to null to avoid confusion. Otherwise, it takes the non-zero streak or retains the existing one. 
+// If both have roundsPlayed > 0, currentStreak is reset to null to avoid confusion. Otherwise, it takes the non zero streak or retains the existing one. 
 // This is used when combining stats from different buckets where we can't be sure if they are sequential or not.
 function mergeStats(base, incoming) {
   return {
@@ -384,7 +384,7 @@ export function getDailyProgress() {
     completedAt: null,
   });
 
-  // Legacy entries saved before timestamp-based daily tracking are unreliable
+  // Legacy entries saved before timestamp based daily tracking are unreliable
   // around timezone boundaries, so treat them as incomplete.
   if (progress.completed && !progress.completedAt) {
     return {

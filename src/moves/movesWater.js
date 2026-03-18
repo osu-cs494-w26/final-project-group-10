@@ -8,14 +8,6 @@ export function registerWaterMoves() {
   registerMove('aqua jet', {
     onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} struck first! (Priority +1)`),
   });
-  MOVE_EFFECTS['aqua ring'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      if (!ctx.attacker.volatile) ctx.attacker.volatile = {};
-      ctx.attacker.volatile.aquaRing = true;
-      ctx.log.push(`${ctx.attacker.name} surrounded itself with a veil of water!`);
-    },
-  };
   registerMove('aqua tail');
   registerMove('brine', {
     onUse: (ctx) => {
@@ -30,14 +22,6 @@ export function registerWaterMoves() {
   });
   registerMove('bubble beam', {
     secondary: { stat: 'spd', stages: -1, target: 'foe', chance: 10 },
-  });
-  registerMove('clamp', {
-    onHit: (ctx) => {
-      if (!ctx.defender.volatile) ctx.defender.volatile = {};
-      ctx.defender.volatile.trapped = Math.floor(Math.random() * 2) + 4;
-      ctx.defender.volatile.trapDmg  = Math.floor(ctx.defender.maxHp / 8);
-      ctx.log.push(`${ctx.defender.name} was clamped and can't escape!`);
-    },
   });
   registerMove('crabhammer', { highCrit: true });
   registerMove('dive', {
@@ -73,26 +57,12 @@ export function registerWaterMoves() {
   registerMove('origin pulse', {
     onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} unleashed a pulse of water at all foes!`),
   });
-  MOVE_EFFECTS['rain dance'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.weather = { type: 'rain', turns: 5 };
-      ctx.log.push('It started to rain!');
-    },
-  };
   registerMove('razor shell', {
     secondary: { stat: 'def', stages: -1, target: 'foe', chance: 50 },
   });
   registerMove('scald', {
     onHit: (ctx) => secondaryStatus(ctx, 'brn', 30),
   });
-  MOVE_EFFECTS['soak'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.defender.types = ['water'];
-      ctx.log.push(`${ctx.defender.name} was soaked and became Water-type!`);
-    },
-  };
   registerMove('steam eruption', {
     onHit: (ctx) => secondaryStatus(ctx, 'brn', 30),
   });
@@ -105,9 +75,6 @@ export function registerWaterMoves() {
     },
   });
   registerMove('water gun');
-  registerMove('water pledge', {
-    onUse: (ctx) => ctx.log.push(`${ctx.attacker.name} used Water Pledge!`),
-  });
   registerMove('water pulse', {
     onHit: (ctx) => { if (Math.random() * 100 < 20) inflictConfusion(ctx, ctx.defender); },
   });
@@ -117,13 +84,6 @@ export function registerWaterMoves() {
       ctx.hitCount = roll < 0.333 ? 2 : roll < 0.667 ? 3 : roll < 0.833 ? 4 : 5;
     },
   });
-  MOVE_EFFECTS['water sport'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.fieldCondition = { ...(ctx.fieldCondition || {}), waterSport: true };
-      ctx.log.push('Water weakened Fire-type moves!');
-    },
-  };
   MOVE_EFFECTS['water spout'] = {
     operational: true,
     onUse: (ctx) => {

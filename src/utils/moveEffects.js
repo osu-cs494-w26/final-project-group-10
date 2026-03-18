@@ -1,6 +1,6 @@
 /*
  * moveEffects.js Assembles the unified MOVE_EFFECTS registry by importing
- * all type-specific move files. Also exports ALL_MOVES and getOperationalMoves.
+ * all type specific move files. Also exports ALL_MOVES and getOperationalMoves.
  */
 
 import {
@@ -30,7 +30,7 @@ import { registerFlyingMoves   } from '../moves/movesFlying.js';
 import { registerBugMoves      } from '../moves/movesBug.js';
 import { registerFairyMoves    } from '../moves/movesFairy.js';
 
-// Register type-specific moves
+// Register type specific moves
 // Order matters for overrides later registrations win.
 registerNormalMoves();
 registerFireMoves();
@@ -79,7 +79,7 @@ Object.entries(aliases).forEach(([alias, canonical]) => {
   if (!MOVE_EFFECTS[alias] && MOVE_EFFECTS[canonical]) MOVE_EFFECTS[alias] = MOVE_EFFECTS[canonical];
 });
 
-// Re-export everything consumers might need
+// Reexport everything consumers might need
 export {
   MOVE_EFFECTS,
   registerMove,
@@ -102,7 +102,7 @@ export {
 
 
 /** Sorted list of all moves that are operational (usable in battle) */
-// Sorted list of every move marked as operational (battle-ready).
+// Sorted list of every move marked as operational (battle ready).
 export const ALL_MOVES = Object.entries(MOVE_EFFECTS)
   .filter(([, v]) => v?.operational)
   .map(([k]) => k)

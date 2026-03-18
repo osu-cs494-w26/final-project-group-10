@@ -1,7 +1,7 @@
 /*
 * ModeSetupPanel.jsx
 * React component that renders a modal panel for selecting the game type and mode setup options in the "Who's That Pokémon?" game mode. 
-* It displays available game types, mode-specific setup options, and a start button to begin the game session with the selected configuration. 
+* It displays available game types, mode specific setup options, and a start button to begin the game session with the selected configuration. 
 */
 
 import React from 'react';
@@ -43,8 +43,8 @@ export default function ModeSetupPanel({
   const canStart = !!gameTypeKey && (!requiresSetup || !!setupValue);
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.78)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px', zIndex:250 }}>
-      <section style={{ width:'100%', maxWidth:'860px', background:'rgba(10,10,10,0.98)', border:`1px solid ${mode.accent}`, boxShadow:'0 24px 60px rgba(0,0,0,0.45)', padding:'28px' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.78)', display:'flex', alignItems:'flex-start', justifyContent:'center', padding:'24px', zIndex:250, overflowY:'auto' }}>
+      <section style={{ width:'100%', maxWidth:'860px', background:'rgba(10,10,10,0.98)', border:`1px solid ${mode.accent}`, boxShadow:'0 24px 60px rgba(0,0,0,0.45)', padding:'28px', margin:'auto 0', display:'flex', flexDirection:'column' }}>
         <div style={{ display:'flex', justifyContent:'space-between', gap:'12px', alignItems:'flex-start', marginBottom:'18px', flexWrap:'wrap' }}>
           <div style={{ maxWidth:'620px' }}>
             <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.22em', color:mode.accent, marginBottom:'10px' }}>Mode Setup</div>
@@ -67,10 +67,10 @@ export default function ModeSetupPanel({
           ) : null}
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:requiresSetup ? 'minmax(0, 1.25fr) minmax(0, 1fr)' : '1fr', gap:'18px' }}>
+        <div className="wtp-setup-grid" style={{ display:'grid', gridTemplateColumns:requiresSetup ? 'minmax(0, 1.25fr) minmax(0, 1fr)' : '1fr', gap:'18px' }}>
           <div style={{ border:'1px solid rgba(255,255,255,0.08)', padding:'18px', background:'rgba(255,255,255,0.02)' }}>
             <div style={sectionLabelStyle()}>Game Category</div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(170px, 1fr))', gap:'10px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(140px, 1fr))', gap:'10px' }}>
               {gameTypes.map((gameType) => {
                 const active = gameType.key === gameTypeKey;
                 return (

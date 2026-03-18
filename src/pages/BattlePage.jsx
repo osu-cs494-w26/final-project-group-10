@@ -6,6 +6,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { GEN1_POKEMON, GEN2_POKEMON, GEN3_POKEMON, GEN4_POKEMON, GEN5_POKEMON } from '../utils/constants.js';
 import { fetchPokeData, fetchMoveData } from '../hooks/usePokemonData.js';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 import { useBattle, BATTLE_STATE, CONTROLLER } from '../hooks/useBattle.js';
 import { MOVE_EFFECTS, getOperationalMoves } from '../utils/moveEffects.js';
 import BattleViewport from '../components/BattleViewport.jsx';
@@ -52,18 +53,7 @@ function ensureEvs(evs) { return evs ? { ...DEFAULT_EVS, ...evs } : DEFAULT_EVS;
 function ensureIvs(ivs) { return ivs ? { ...DEFAULT_IVS, ...ivs } : DEFAULT_IVS; }
 
 // Progress bar shown while Pokémon and move data loads.
-function LoadingScreen({ progress, total }) {
-  const pct = total > 0 ? Math.round((progress / total) * 100) : 0;
-  return (
-    <div style={{ minHeight: 'calc(100vh - var(--nav-h))', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', background: 'var(--black)' }}>
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', letterSpacing: '0.2em', color: 'var(--white)', textTransform: 'uppercase' }}>Preparing Battle</div>
-      <div style={{ width: '300px', height: '4px', background: 'var(--grey-800)' }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: 'var(--white)', transition: 'width 0.2s ease' }} />
-      </div>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--grey-400)' }}>Loading... {pct}%</div>
-    </div>
-  );
-}
+
 
 // Post-battle popup showing a Pokémon's full stats and moves.
 function PokemonDetailPopup({ poke, moveData, onClose }) {
@@ -593,7 +583,7 @@ export default function BattlePage({ team, setPage, opponentTeam = null, trainer
 
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
-  if (!ready || !visSnap) return <LoadingScreen progress={progress} total={total} />;
+  if (!ready || !visSnap) return <LoadingScreen title="Preparing Battle" loaded={progress} total={total} />;
 
   // Map generic snap to component-friendly names
   const playerTeam  = visSnap.teams[0];

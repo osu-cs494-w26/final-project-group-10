@@ -44,7 +44,7 @@ export default function WhosThatPokemonPage({ onSelectMode, setPage, onViewStats
           <div style={{ marginBottom:'16px' }}>
             <GameModeCard mode={featuredMode} onSelect={onSelectMode} index={0} featured />
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'16px' }}>
+          <div className="wtp-mode-grid">
             {standardModes.map((mode, index) => (
               <GameModeCard key={mode.key} mode={mode} onSelect={onSelectMode} index={index + 1} />
             ))}

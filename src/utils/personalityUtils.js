@@ -115,14 +115,13 @@ export function findMatchingNature(natures, preferredStat, leastStat) {
 export async function generateTeamVariants(nature, allPokemonList) {
   console.log(`Generating team variants for nature: ${nature.name}`);
 
-  // Balanced team (original scoring)
   const balancedTeam = await selectTeamForNature(nature, allPokemonList);
 
   // Offensive variant: boost attacking stats, penalize defense
   const offensiveNature = {
     ...nature,
-    increased_stat: nature.increased_stat, // keep same increased
-    decreased_stat: { name: nature.increased_stat?.name === 'attack' ? 'defense' : 'special-defense' } // decrease defensive counterpart
+    increased_stat: nature.increased_stat, 
+    decreased_stat: { name: nature.increased_stat?.name === 'attack' ? 'defense' : 'special-defense' } 
   };
   const offensiveTeam = await selectTeamForNature(offensiveNature, allPokemonList);
 
@@ -130,7 +129,7 @@ export async function generateTeamVariants(nature, allPokemonList) {
   const defensiveNature = {
     ...nature,
     increased_stat: { name: nature.increased_stat?.name === 'attack' ? 'defense' : 'special-defense' },
-    decreased_stat: nature.increased_stat // decrease the original increased stat
+    decreased_stat: nature.increased_stat 
   };
   const defensiveTeam = await selectTeamForNature(defensiveNature, allPokemonList);
 

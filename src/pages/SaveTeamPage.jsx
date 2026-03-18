@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GEN1_POKEMON, GEN2_POKEMON, GEN3_POKEMON, GEN4_POKEMON, GEN5_POKEMON, TYPE_COLORS, TYPE_BG } from '../utils/constants.js';
 import { usePokemonData, fetchPokeData } from '../hooks/usePokemonData.js';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 import useIsMobile    from '../hooks/useIsMobile.js';
 import CustomizePopup from '../components/CustomizePopup.jsx';
 import SaveSlotPanel  from '../components/SaveSlotPanel.jsx';
@@ -67,7 +68,7 @@ function MiniPartySlot({ pokemon, idx, isSelected, onClick }) {
   const border = isSelected ? '#4ade80' : pokemon ? (TYPE_COLORS[type] || 'var(--border-lt)') : 'var(--border)';
   return (
     <div onClick={onClick} style={{ background:bg, border:`1px solid ${border}`, borderLeft:`3px solid ${border}`, width:'52px', height:'52px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0, position:'relative', transition:'all 0.15s' }}>
-      {(pokemon?.cachedData?.staticSprite || pokemon?.cachedData?.sprite)
+      {pokemon?.cachedData?.sprite
         ? <img src={pokemon.cachedData.staticSprite || pokemon.cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated' }} />
         : <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--grey-600)' }}>{idx + 1}</span>}
       {isSelected && <div style={{ position:'absolute', inset:0, boxShadow:'0 0 0 2px #4ade80 inset', pointerEvents:'none' }} />}
@@ -88,7 +89,7 @@ function PartySlot({ pokemon, idx, isSelected, onClick, onDrop, onRemove, dragOv
       style={{ background:bg, borderTop:`1px solid ${borderColor}`, borderRight:`1px solid ${borderColor}`, borderBottom:`1px solid ${borderColor}`, borderLeft:`4px solid ${filled ? accentColor : (dragOver ? '#c0a820' : 'var(--border)')}`, padding:'10px 12px', cursor:'pointer', display:'flex', alignItems:'center', gap:'10px', transition:'background 0.15s, border-color 0.15s', minHeight:'64px', position:'relative', boxShadow: isSelected ? '0 0 0 1px var(--white)' : 'none' }}>
       {filled ? (
         <>
-          {(pokemon.cachedData?.staticSprite || pokemon.cachedData?.sprite)
+          {pokemon.cachedData?.sprite
             ? <img src={pokemon.cachedData.staticSprite || pokemon.cachedData.sprite} alt={pokemon.name} style={{ width:'40px', height:'40px', imageRendering:'pixelated', flexShrink:0 }} />
             : <div style={{ width:'40px', height:'40px', background:'var(--grey-700)', flexShrink:0 }} />}
           <div style={{ flex:1, minWidth:0 }}>
@@ -253,7 +254,7 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
       item: p.item,
       ability: p.ability,
       types: p.cachedData?.types || [],
-      sprite: p.cachedData?.staticSprite || p.cachedData?.sprite || null,
+      sprite: p.cachedData?.sprite || null,
       evs: p.evs || { hp:0, attack:0, defense:0, 'special-attack':0, 'special-defense':0, speed:0 },
       ivs: p.ivs || { hp:31, attack:31, defense:31, 'special-attack':31, 'special-defense':31, speed:31 },
     }));
@@ -290,7 +291,7 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
         const full = await fetchPokeData(p.name);
         return { ...p, cachedData: full };
       } catch {
-        return { ...p, cachedData: { sprite: p.staticSprite || p.sprite, staticSprite: p.staticSprite || p.sprite, types: p.types || [], moves: p.moves || [] } };
+        return { ...p, cachedData: { sprite: p.sprite, types: p.types || [], moves: p.moves || [] } };
       }
     }));
     setTeam(rehydrated);
@@ -319,22 +320,8 @@ export default function SaveTeamPage({ setPage, user, initialTeam }) {
     : 'Click or drag a Pokémon to add it to your party';
 
   if (!allLoaded) {
-    const pct    = Math.round(loadProgress * 100);
     const loaded = Math.round(loadProgress * ALL_POKEMON.length);
-    return (
-      <div style={{ height:'calc(100vh - var(--nav-h))', background:'var(--black)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'32px' }}>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:'28px', letterSpacing:'0.3em', textTransform:'uppercase', color:'var(--white)' }}>Loading Pokédex</div>
-        <div style={{ width:'360px', display:'flex', flexDirection:'column', gap:'12px' }}>
-          <div style={{ background:'var(--grey-800)', height:'6px', width:'100%' }}>
-            <div style={{ background:'#4ade80', height:'100%', width:`${pct}%`, transition:'width 0.1s' }} />
-          </div>
-          <div style={{ display:'flex', justifyContent:'space-between', fontFamily:'var(--font-mono)', fontSize:'11px', color:'var(--grey-400)' }}>
-            <span>{loaded} / {ALL_POKEMON.length} Pokémon</span>
-            <span>{pct}%</span>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen title="Loading Pokédex" loaded={loaded} total={ALL_POKEMON.length} />;
   }
 
   return (

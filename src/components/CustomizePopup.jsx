@@ -8,7 +8,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import ItemPopup        from './ItemPopup.jsx';
 import ChangeMovePopup  from './ChangeMovePopup.jsx';
 import useIsMobile      from '../hooks/useIsMobile.js';
 import { fetchMoveData }               from '../hooks/usePokemonData.js';
@@ -51,42 +50,6 @@ function EVStatRow({ statKey, label, base, ev, onEVChange, totalEVs, iv }) {
           style={{ background:'transparent', border:'1px solid var(--border)', color: maxAdd > 0 ? 'var(--white)' : 'var(--grey-700)', width:'16px', height:'16px', cursor: maxAdd > 0 ? 'pointer' : 'not-allowed', fontSize:'12px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, lineHeight:1 }}>+</button>
         <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'var(--grey-500)', width:'24px', textAlign:'right', flexShrink:0 }}>{ev}</span>
       </div>
-    </div>
-  );
-}
-
-/* Dropdown for selecting one of a Pokémon's available abilities. */
-function AbilityPanel({ abilityList, selected, onSelect }) {
-  const [open, setOpen] = useState(false);
-  if (!abilityList || abilityList.length === 0) return null;
-  const current = abilityList.find(a => a.name === selected?.name) || abilityList[0];
-  return (
-    <div style={{ width:'100%' }}>
-      <div style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.12em', color:'var(--grey-400)', textTransform:'uppercase', marginBottom:'4px' }}>Ability</div>
-      <div onClick={() => setOpen(o => !o)} style={{ background:'var(--grey-800)', border:'1px solid var(--border-mid)', padding:'8px 10px', cursor:'pointer' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontFamily:'var(--font-ui)', fontWeight:600, fontSize:'13px', textTransform:'capitalize', color:'var(--white)' }}>{current.name.replace(/-/g, ' ')}</span>
-          <span style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--grey-400)' }}>{open ? '▲' : '▼'}</span>
-        </div>
-        {current.isHidden && <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--grey-500)', marginTop:'1px' }}>Hidden Ability</div>}
-        {current.desc && <div style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:'var(--grey-300)', marginTop:'3px', lineHeight:1.4 }}>{current.desc}</div>}
-      </div>
-      {open && (
-        <div style={{ border:'1px solid var(--border-mid)', borderTop:'none', background:'var(--grey-900)' }}>
-          {abilityList.filter(a => a.name !== current.name).map(ab => (
-            <div key={ab.name} onClick={() => { onSelect(ab); setOpen(false); }}
-              style={{ padding:'8px 10px', cursor:'pointer', borderBottom:'1px solid var(--border)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--grey-800)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <div style={{ fontFamily:'var(--font-ui)', fontWeight:600, fontSize:'13px', textTransform:'capitalize', color:'var(--white)' }}>
-                {ab.name.replace(/-/g, ' ')}
-                {ab.isHidden && <span style={{ fontFamily:'var(--font-mono)', fontSize:'10px', color:'var(--grey-500)', marginLeft:'6px' }}>Hidden</span>}
-              </div>
-              {ab.desc && <div style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:'var(--grey-300)', marginTop:'2px', lineHeight:1.4 }}>{ab.desc}</div>}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -135,8 +98,6 @@ export default function CustomizePopup({ pokemon, onClose, onSave }) {
     return [...init, null, null, null, null].slice(0, 4);
   });
   const [selectedItem,    setSelectedItem]    = useState(pokemon.item || null);
-  const [selectedAbility, setSelectedAbility] = useState(pokemon.ability || cached?.abilities?.[0] || null);
-  const [showItems,       setShowItems]       = useState(false);
   const [showChangeMoves, setShowChangeMoves] = useState(false);
   const [friendship,      setFriendship]      = useState(pokemon.friendship ?? 128);
   const [gender,          setGender]          = useState(pokemon.gender ?? 'm');
@@ -155,7 +116,6 @@ export default function CustomizePopup({ pokemon, onClose, onSave }) {
     });
   };
 
-  const abilityList = cached?.abilities || [];
   const stats       = cached?.stats     || [];
   const types       = cached?.types     || [];
   const sprite      = cached?.staticSprite || cached?.sprite    || null;
@@ -179,18 +139,6 @@ export default function CustomizePopup({ pokemon, onClose, onSave }) {
         {stats.map(s => (
           <EVStatRow key={s.name} statKey={s.name} label={STAT_LABELS[s.name] || s.name.slice(0, 4).toUpperCase()} base={s.value} ev={evs[s.name] || 0} iv={31} onEVChange={handleEVChange} totalEVs={totalEVs} />
         ))}
-      </div>
-      <AbilityPanel abilityList={abilityList} selected={selectedAbility} onSelect={setSelectedAbility} />
-      <div style={{ width:'100%' }}>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.12em', color:'var(--grey-400)', textTransform:'uppercase', marginBottom:'4px', marginTop:'4px' }}>Item</div>
-        <button onClick={() => setShowItems(true)} style={{ width:'100%', background:'var(--grey-800)', border:'1px solid var(--border-mid)', color:'var(--white)', padding:'9px 10px', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'12px', textAlign:'left' }}>
-          {selectedItem ? (selectedItem.name || selectedItem) : 'No Item'}
-        </button>
-        {selectedItem && (
-          <button onClick={() => setSelectedItem(null)} style={{ width:'100%', background:'transparent', border:'none', color:'var(--grey-500)', cursor:'pointer', fontFamily:'var(--font-mono)', fontSize:'11px', padding:'3px', textAlign:'center' }}>
-            remove item
-          </button>
-        )}
       </div>
       <div style={{ width:'100%' }}>
         <div style={{ fontFamily:'var(--font-display)', fontSize:'11px', letterSpacing:'0.12em', color:'var(--grey-400)', textTransform:'uppercase', marginBottom:'4px', marginTop:'4px' }}>Gender</div>
@@ -225,7 +173,7 @@ export default function CustomizePopup({ pokemon, onClose, onSave }) {
       </div>
       <button
         onClick={() => {
-          onSave({ ...pokemon, moves: currentMoves.filter(Boolean), item: selectedItem, ability: selectedAbility, friendship, gender, evs, ivs: pokemon.ivs || { hp:31, attack:31, defense:31, 'special-attack':31, 'special-defense':31, speed:31 } });
+          onSave({ ...pokemon, moves: currentMoves.filter(Boolean), item: null, ability: null, friendship, gender, evs, ivs: pokemon.ivs || { hp:31, attack:31, defense:31, 'special-attack':31, 'special-defense':31, speed:31 } });
           onClose();
         }}
         style={{ background:'var(--white)', border:'none', color:'var(--black)', padding:'13px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'15px', letterSpacing:'0.1em', textTransform:'uppercase', transition:'all 0.15s', marginTop:'auto' }}>
@@ -266,7 +214,6 @@ export default function CustomizePopup({ pokemon, onClose, onSave }) {
         </div>
       </div>
 
-      {showItems && <ItemPopup onClose={() => setShowItems(false)} onSelect={setSelectedItem} selectedItem={selectedItem} />}
       {showChangeMoves && (
         <ChangeMovePopup
           pokemon={pokemon}

@@ -2,8 +2,8 @@
  * PokemonCard.jsx Memoized grid card showing a Pokémon's sprite, name,
  * type badges, and an Add button. Shared between SaveTeamPage and SelectPage.
  *
- * teamFull is NOT a prop. It is communicated via the .team-full CSS class
- * on the parent container so flipping it never triggers a re-render of
+ * teamFull is NOT a prop. It is communicated via the .teamfull CSS class
+ * on the parent container so flipping it never triggers a rerender of
  * individual cards. onDragStart, onDragEnd, onClick, and onAdd must be
  * stable references (useRef and useCallback pattern) for memo to hold.
  */

@@ -42,7 +42,7 @@ function usePokedexDetails(selectedPokemon) {
     return details;
 }
 
-export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) {
+export default function Pokedex({ selectedPokemon, setSelectedPokemon, setPage }) {
     const { description, category } = usePokedexDetails(selectedPokemon);
     const [playing, setPlaying] = useState(false);
 
@@ -56,39 +56,44 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
     };
 
     return (
-        <div 
+        <div
             onClick={(e) => e.stopPropagation()}
-            style={{
-                display: 'flex',
-                border: '3px solid black',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '6px 6px 0 black',
-                width: '580px',
-        }}>
-
+            className="pokedex-card"
+        >
             {/* Left Panel */}
-            <div style={{
+            <div className="pokedex-card-left" style={{
                 background: '#cc2233',
-                width: '260px',
-                flexShrink: 0,
                 padding: '16px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
             }}>
 
-                {/* Top lights and exit button */}
+                {/* Top row: back button + status lights */}
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    <button onClick={() => {
-                        setPage('pokedex')
-                        setSelectedPokemon(null)
+                    <button
+                        onClick={() => setSelectedPokemon(null)}
+                        style={{
+                            cursor: 'pointer',
+                            background: '#4488ff',
+                            border: '2px solid black',
+                            borderRadius: '4px',
+                            color: 'white',
+                            fontSize: '10px',
+                            fontFamily: 'monospace',
+                            fontWeight: 'bold',
+                            letterSpacing: '0.05em',
+                            padding: '2px 8px',
+                            lineHeight: 1.4,
+                            textTransform: 'uppercase',
+                            flexShrink: 0,
                         }}
-                        style={{ cursor: 'pointer', width: 14, height: 14, borderRadius: '50%', background: '#4488ff', border: '2px solid black' }}
-                    />
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4444', border: '1.5px solid black' }}/>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ffcc00', border: '1.5px solid black' }}/>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#44cc44', border: '1.5px solid black' }}/>
+                    >
+                        ← Back
+                    </button>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4444', border: '1.5px solid black', flexShrink: 0 }}/>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ffcc00', border: '1.5px solid black', flexShrink: 0 }}/>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#44cc44', border: '1.5px solid black', flexShrink: 0 }}/>
                 </div>
 
                 {/* Screen */}
@@ -113,7 +118,6 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
                     </div>
                 </div>
 
-                
                 {/* Name and cry button */}
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
                     <div style={{
@@ -171,8 +175,8 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
+                minWidth: 0,
             }}>
-
                 {/* Description screen */}
                 <div style={{
                     background: 'var(--grey-800)',
@@ -207,7 +211,6 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
                             {category}
                         </span>
                     </div>
-                    
                     <div style={{
                         background: 'var(--grey-800)',
                         borderRadius: '6px',
@@ -222,5 +225,5 @@ export default function Pokedex({ selectedPokemon,setSelectedPokemon,setPage }) 
                 </div>
             </div>
         </div>
-    )
+    );
 }

@@ -54,13 +54,6 @@ export function registerRockMoves() {
       ctx.log.push(`Rollout's power is ${power}!`);
     },
   });
-  MOVE_EFFECTS['sandstorm'] = {
-    operational: true, power: null,
-    onUse: (ctx) => {
-      ctx.weather = { type: 'sandstorm', turns: 5 };
-      ctx.log.push('A sandstorm brewed!');
-    },
-  };
   registerMove('smack down', {
     onHit: (ctx) => {
       if (!ctx.defender.volatile) ctx.defender.volatile = {};
