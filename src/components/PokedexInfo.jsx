@@ -29,7 +29,7 @@ function useEvolutionChain(pokemonName) {
                 setChain(evoCache[baseName]);
                 return;
             }
- 
+
             try {
                 const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${baseName}`);
                 const speciesData = await speciesRes.json();
@@ -40,8 +40,25 @@ function useEvolutionChain(pokemonName) {
                 const chainData = await chainRes.json();
                 const names = flattenChain(chainData.chain);
  
-                const members = await Promise.all(names.map(n => fetchPokeData(n)));
-                const result = members.map(m => ({ name: m.name, sprite: m.sprite, id: m.id }));
+                const members = await Promise.all(names.map( async(n) => {
+                    try {
+                        const pokeRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${n}`);
+                        const pokeData = await pokeRes.json(); 
+                        const suffixName = pokeData.varieties.find(v => v.is_default)?.pokemon.name;
+                        const memberData = await fetchPokeData(suffixName);
+
+                        return {
+                            speciesName: n, 
+                            name: memberData.name, 
+                            sprite: memberData.sprite,
+                            id: memberData.id 
+                        };
+                    }   catch (err) {
+                        console.error(`Failed to fetch member in const members ${n}:`, err);
+                        return null;
+                    } 
+                }));
+                const result = members.filter(m => m !== null);
  
                 evoCache[baseName] = result;
                 if (!cancelled) setChain(result);
