@@ -1,12 +1,11 @@
 /**
  * EvolutionQuizResultPage.jsx
- * Displays score for evolution quiz.
+ * Displays score for evolution quiz. Responsive.
  */
 
 import React from 'react';
 
 const S = {
-  // Same style object as above
   wrap: {
     minHeight: 'calc(100vh - var(--nav-h))',
     background: 'var(--black)',
@@ -62,25 +61,24 @@ const S = {
 };
 
 export default function EvolutionQuizResultPage({ result, setPage, clearResult }) {
-  if (!result) {
-    return <div style={S.wrap}>No result found.</div>;
-  }
-
+  if (!result) return <div style={S.wrap}>No result found.</div>;
   const { score, total } = result;
   const percent = Math.round((score / total) * 100);
-
-  const handleRetake = () => {
-    clearResult();
-    setPage('evolution-quiz');
-  };
-
-  const handleBack = () => {
-    clearResult();
-    setPage('quiz');
-  };
+  const handleRetake = () => { clearResult(); setPage('evolution-quiz'); };
+  const handleBack = () => { clearResult(); setPage('quiz'); };
 
   return (
-    <div style={S.wrap}>
+    <div className="evolution-quiz-result" style={S.wrap}>
+      <style>{`
+        @media (max-width: 768px) {
+          .evolution-quiz-result > div { padding: 2rem 1rem !important; }
+          .evolution-quiz-result .${S.title} { font-size: 24px !important; }
+          .evolution-quiz-result .${S.score} { font-size: 40px !important; }
+          .evolution-quiz-result .${S.percentage} { font-size: 16px !important; }
+          .evolution-quiz-result .${S.btnRow} { flex-direction: column !important; gap: 0.5rem !important; }
+          .evolution-quiz-result .${S.btn} { width: 100% !important; }
+        }
+      `}</style>
       <div style={S.container}>
         <div style={S.title}>Evolution Quiz Complete!</div>
         <div style={S.score}>{score} / {total}</div>

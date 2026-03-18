@@ -2,14 +2,13 @@
  * PersonalityQuizPage.jsx
  * A multi-step quiz to determine the user's Pokémon nature.
  * Asks 10 random questions from a bank of 25.
- * On completion, navigates to result page with nature and team.
+ * On completion, navigates to result page with nature and team. Responsive.
  */
 
 import React, { useState, useEffect } from 'react';
 import { 
   fetchAllNatures, 
   getAllPokemonList, 
-  selectTeamForNature,
   generateTeamVariants, 
   computePreferredStats, 
   findMatchingNature 
@@ -61,10 +60,6 @@ const S = {
     transition: 'all 0.15s',
     textAlign: 'left',
     borderRadius: '4px',
-    '&:hover': {
-      background: 'var(--grey-700)',
-      borderColor: 'var(--grey-400)',
-    },
   },
   selected: {
     background: 'var(--grey-700)',
@@ -115,19 +110,17 @@ export default function PersonalityQuizPage({ setPage, setQuizResult }) {
       const shuffled = [...questionBank].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 10);
       setQuestions(selected);
-
       try {
         // Fetch natures and get Gen 1-5 list
         const naturesData = await fetchAllNatures();
         setNatures(naturesData);
-        setAllPokemon(getAllPokemonList()); // synchronous
+        setAllPokemon(getAllPokemonList());
       } catch (error) {
         console.error('Error initializing quiz:', error);
       } finally {
         setInitialLoading(false);
       }
     }
-
     initializeQuiz();
   }, []);
 
@@ -150,38 +143,35 @@ export default function PersonalityQuizPage({ setPage, setQuizResult }) {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Quiz complete - compute nature and team
       computeResults(newScores);
     }
   };
 
-
-const computeResults = async (scores) => {
-  setLoading(true);
-  try {
-    const { preferred, least } = computePreferredStats(scores);
-    const nature = findMatchingNature(natures, preferred, least);
+  const computeResults = async (scores) => {
+    setLoading(true);
+    try {
+      const { preferred, least } = computePreferredStats(scores);
+      const nature = findMatchingNature(natures, preferred, least);
 
     // Generate all three team variants
-    const teams = await generateTeamVariants(nature, allPokemon);
+      const teams = await generateTeamVariants(nature, allPokemon);
 
     // Save result with all teams
     setQuizResult({ 
       nature, 
       teams, // object with balanced, offensive, defensive
     });
-    setPage('personality-result');
-  } catch (error) {
-    console.error('Error building teams:', error);
-    alert('Something went wrong. Please try again.');
-    // reset quiz
-    setCurrentIndex(0);
-    setAnswers([]);
-    setStatScores({ attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 });
-  } finally {
-    setLoading(false);
-  }
-};
+      setPage('personality-result');
+    } catch (error) {
+      console.error('Error building teams:', error);
+      alert('Something went wrong. Please try again.');
+      setCurrentIndex(0);
+      setAnswers([]);
+      setStatScores({ attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (initialLoading) {
     return (
@@ -204,10 +194,7 @@ const computeResults = async (scores) => {
           <div style={S.title}>Error</div>
           <div style={S.loadingContainer}>
             <div style={S.loadingText}>Could not load quiz questions</div>
-            <button 
-              style={{ ...S.option, marginTop: '1rem' }}
-              onClick={() => window.location.reload()}
-            >
+            <button style={{ ...S.option, marginTop: '1rem' }} onClick={() => window.location.reload()}>
               Try Again
             </button>
           </div>
@@ -220,7 +207,22 @@ const computeResults = async (scores) => {
   const progress = `${currentIndex + 1} / ${questions.length}`;
 
   return (
-    <div style={S.wrap}>
+    <div className="personality-quiz" style={S.wrap}>
+      <style>{`
+        @media (max-width: 768px) {
+          .personality-quiz > div { padding: 1.5rem !important; }
+          .personality-quiz .${S.title} { font-size: 20px !important; }
+          .personality-quiz .${S.question} { font-size: 16px !important; }
+          .personality-quiz .${S.option} { padding: 10px !important; font-size: 13px !important; }
+          .personality-quiz .${S.progress} { font-size: 11px !important; }
+        }
+        @media (max-width: 480px) {
+          .personality-quiz > div { padding: 1rem !important; }
+          .personality-quiz .${S.title} { font-size: 18px !important; }
+          .personality-quiz .${S.question} { font-size: 15px !important; }
+          .personality-quiz .${S.option} { padding: 8px !important; font-size: 12px !important; }
+        }
+      `}</style>
       <div style={S.container}>
         <div style={S.title}>Trainer Personality Quiz</div>
         <div style={S.progress}>Question {progress}</div>

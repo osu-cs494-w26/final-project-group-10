@@ -1,7 +1,7 @@
 /**
  * QuizPage.jsx
  * Hub page with three quiz options.
- * Styled to match BattleModePage design.
+ * Styled to match BattleModePage design. Responsive.
  */
 
 import React, { useState } from 'react';
@@ -58,6 +58,7 @@ function QuizCard({ mode, onClick }) {
 
   return (
     <div
+      className="quiz-card"
       onClick={() => onClick(mode.id)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -76,14 +77,14 @@ function QuizCard({ mode, onClick }) {
         {mode.num}
       </div>
       <div>
-        <div style={{ fontFamily:'var(--font-display)', fontSize:'34px', letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--white)', lineHeight:1.2, marginBottom:'4px' }}>
+        <div className="quiz-card-label" style={{ fontFamily:'var(--font-display)', fontSize:'34px', letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--white)', lineHeight:1.2, marginBottom:'4px' }}>
           {mode.label}
         </div>
         <div style={{ fontFamily:'var(--font-mono)', fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.1em', color:mode.accent }}>
           {mode.subtitle}
         </div>
       </div>
-      <div style={{ fontFamily:'var(--font-mono)', fontSize:'15px', color:'var(--grey-300)', lineHeight:1.9, flex:1 }}>
+      <div className="quiz-card-desc" style={{ fontFamily:'var(--font-mono)', fontSize:'15px', color:'var(--grey-300)', lineHeight:1.9, flex:1 }}>
         {mode.description}
       </div>
       <div style={{ fontFamily:'var(--font-mono)', fontSize:'11px', color:mode.accent, letterSpacing:'0.08em', textTransform:'uppercase', opacity: hovered ? 1 : 0, transition:'opacity 0.15s' }}>
@@ -100,7 +101,27 @@ export default function QuizPage({ setPage }) {
   };
 
   return (
-    <div style={{ minHeight:'calc(100vh - var(--nav-h))', display:'flex', flexDirection:'column', alignItems:'center', padding:'40px 24px', gap:'32px', position:'relative', zIndex:1 }}>
+    <div className="quiz-page" style={{ minHeight:'calc(100vh - var(--nav-h))', display:'flex', flexDirection:'column', alignItems:'center', padding:'40px 24px', gap:'32px', position:'relative', zIndex:1 }}>
+      <style>{`
+        /* Responsive styles for QuizPage */
+        @media (max-width: 768px) {
+          .quiz-page > div { max-width: 100%; }
+          .quiz-page .quiz-card { padding: 30px 20px !important; min-height: 320px !important; }
+          .quiz-page .quiz-card-label { font-size: 24px !important; }
+          .quiz-page .quiz-card-desc { font-size: 13px !important; }
+          .quiz-page .quiz-card > div:first-of-type { top: 8px !important; right: 8px !important; }
+          .quiz-page > div > div:last-child { padding: 16px !important; }
+          .quiz-page > div > div:last-child > div { grid-template-columns: 1fr !important; gap: 12px !important; }
+        }
+        @media (max-width: 480px) {
+          .quiz-page .quiz-card { padding: 20px 15px !important; min-height: 280px !important; }
+          .quiz-page .quiz-card-label { font-size: 20px !important; }
+          .quiz-page .quiz-card-desc { font-size: 12px !important; }
+          .quiz-page > div > div:first-of-type button { padding: 8px 16px !important; font-size: 12px !important; }
+          .quiz-page > div > div:nth-child(2) div:first-child { font-size: 9px !important; }
+          .quiz-page > div > div:nth-child(2) div:last-child { font-size: 28px !important; }
+        }
+      `}</style>
       <div style={{ width:'100%', maxWidth:'1100px', display:'flex', flexDirection:'column', gap:'32px' }}>
 
         <button onClick={() => setPage('home')} style={{ background:'none', border:'1px solid var(--white)', color:'var(--white)', padding:'10px 24px', cursor:'pointer', fontFamily:'var(--font-display)', fontSize:'14px', letterSpacing:'0.12em', textTransform:'uppercase', transition:'all 0.15s', alignSelf:'flex-start' }}

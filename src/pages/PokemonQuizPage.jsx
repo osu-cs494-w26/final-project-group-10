@@ -1,6 +1,6 @@
 /**
  * PokemonQuizPage.jsx
- * 10-question Pokémon trivia quiz.
+ * 10-question Pokémon trivia quiz. Responsive.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -57,10 +57,6 @@ const S = {
     cursor: 'pointer',
     textAlign: 'left',
     transition: 'all 0.15s',
-    '&:hover': {
-      background: 'var(--grey-700)',
-      borderColor: 'var(--grey-400)',
-    },
   },
   selected: {
     background: 'var(--grey-700)',
@@ -144,13 +140,27 @@ export default function PokemonQuizPage({ setPage, setPokemonQuizResult }) {
     );
   }
 
-  if (quizComplete) return null; // Will redirect via useEffect
+  if (quizComplete) return null;
 
   const currentQ = questions[currentIndex];
   const progress = `${currentIndex + 1} / ${questions.length}`;
 
   return (
-    <div style={S.wrap}>
+    <div className="pokemon-quiz" style={S.wrap}>
+      <style>{`
+        @media (max-width: 768px) {
+          .pokemon-quiz > div { padding: 1.5rem !important; }
+          .pokemon-quiz .${S.title} { font-size: 20px !important; }
+          .pokemon-quiz .${S.question} { font-size: 18px !important; }
+          .pokemon-quiz .${S.option} { padding: 12px !important; font-size: 14px !important; }
+          .pokemon-quiz .${S.btn} { font-size: 14px !important; }
+        }
+        @media (max-width: 480px) {
+          .pokemon-quiz .${S.title} { font-size: 18px !important; }
+          .pokemon-quiz .${S.question} { font-size: 16px !important; }
+          .pokemon-quiz .${S.option} { padding: 10px !important; font-size: 13px !important; }
+        }
+      `}</style>
       <div style={S.container}>
         <div style={S.title}>Pokémon Quiz</div>
         <div style={S.progress}>Question {progress}</div>
