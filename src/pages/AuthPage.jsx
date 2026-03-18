@@ -287,7 +287,7 @@ export default function AuthPage({ signIn, signUp, resetPassword, updatePassword
           <div style={S.wrap}>
             <PageTitle />
             <div style={S.card}>
-              <div style={S.sub}>Battle · Explore · Compete</div>
+              <div style={S.sub}></div>
               <ResetPanel updatePassword={updatePassword} />
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function AuthPage({ signIn, signUp, resetPassword, updatePassword
       <div style={S.wrap}>
         <PageTitle />
         <div style={S.card}>
-          <div style={S.sub}>Battle · Explore · Compete</div>
+          <div style={S.sub}>Battle - Learn - Quiz</div>
 
           {mode === 'forgot' ? (
             <ForgotPanel resetPassword={resetPassword} onBack={() => switchMode('login')} />

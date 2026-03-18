@@ -61,7 +61,7 @@ function makeTestMon() {
   };
 }
 
-// Compact icon-only party slot for the narrow mobile left column.
+// Compact icon only party slot for the narrow mobile left column.
 function MiniPartySlot({ pokemon, idx, isSelected, onClick }) {
   const type = pokemon?.cachedData?.types?.[0];
   const bg   = isSelected ? 'rgba(255,255,255,0.12)' : pokemon ? (TYPE_BG[type] || 'var(--grey-800)') : 'var(--grey-900)';
